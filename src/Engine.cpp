@@ -19,6 +19,7 @@ void Engine::update(float dt)
 void Engine::start()
 {
 	running.store(true);
+	main_loop();
 
 }
 
