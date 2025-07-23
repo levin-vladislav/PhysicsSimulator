@@ -5,6 +5,8 @@
 #include <thread>
 #include <chrono>
 
+class Dispatcher;
+
 class Engine
 {	
 public:

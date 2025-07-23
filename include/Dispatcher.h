@@ -3,10 +3,12 @@
 #include <atomic>
 #include <thread>
 
+class Engine;
+
 class Dispatcher
 {
 public:
-	Dispatcher();
+	Dispatcher(Engine* engine, std::atomic<bool>* shutdown_ptr);
 	
 	void start();
 	void stop();
@@ -16,6 +18,9 @@ private:
 	std::atomic<bool> running;
 	Interpreter interpreter;
 	Logger logger;
+
+	Engine* engine_ptr;
+	std::atomic<bool>* shutdown_ptr;
 
 	void main_loop();
 };

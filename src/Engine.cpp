@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Dispatcher.h"
 
 Engine::Engine() : running(false), logger(Logger("Engine"))
 {
@@ -19,13 +20,14 @@ void Engine::update(float dt)
 void Engine::start()
 {
 	running.store(true);
-	main_loop();
+	t = std::thread(&Engine::main_loop, this);
 
 }
 
 void Engine::stop()
 {
 	running.store(false);
+	if (t.joinable()) t.join();
 }
 
 
