@@ -11,7 +11,7 @@ bool PhysicsEngine::is_running() const
 	return running;
 }
 
-void PhysicsEngine::update()
+void PhysicsEngine::update(float dt)
 {
 
 }

@@ -5,7 +5,7 @@ class GraphicsEngine
 {
 public:
 	GraphicsEngine();
-	void update();
+	void update(float dt);
 	bool is_running() const;
 private:
 	bool running;

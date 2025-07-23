@@ -8,11 +8,11 @@ int main()
     logger.info("Program has been started.");
     Engine engine = Engine();
     Dispatcher dispatcher = Dispatcher();
-    while (engine.is_running() && dispatcher.is_running())
-    {
-        engine.update();
-        dispatcher.update();
-    }
+    
+    engine.start();
+    dispatcher.start();
+
+    return 1;
 
 }
 

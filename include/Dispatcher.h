@@ -1,13 +1,21 @@
 #include "Interpreter.h"
 #include "Logger.h"
+#include <atomic>
+#include <thread>
+
 class Dispatcher
 {
 public:
 	Dispatcher();
-	void update();
+	
+	void start();
+	void stop();
 	bool is_running() const;
 private:
-	bool running;
+	std::thread t;
+	std::atomic<bool> running;
 	Interpreter interpreter;
 	Logger logger;
+
+	void main_loop();
 };

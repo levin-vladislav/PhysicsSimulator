@@ -11,7 +11,7 @@ bool GraphicsEngine::is_running() const
 	return running;
 }
 
-void GraphicsEngine::update()
+void GraphicsEngine::update(float dt)
 {
 
 }

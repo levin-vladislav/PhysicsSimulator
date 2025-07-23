@@ -8,10 +8,28 @@ Dispatcher::Dispatcher() : running(false), logger(Logger("Dispatcher"))
 
 bool Dispatcher::is_running() const
 {
-	return running;
+	return running.load();
 }
 
-void Dispatcher::update()
+void Dispatcher::main_loop()
 {
-	
+	while (running.load())
+	{
+
+	}
+}
+
+void Dispatcher::start()
+{
+	running.store(true);
+	t = std::thread(&Dispatcher::main_loop, this);
+}
+
+void Dispatcher::stop()
+{
+	running.store(false);
+	if (t.joinable())
+	{
+		t.join();
+	}
 }
