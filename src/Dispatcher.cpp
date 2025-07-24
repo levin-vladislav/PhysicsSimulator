@@ -30,7 +30,7 @@ void Dispatcher::main_loop()
 		}
 		else
 		{
-			logger.info(input);
+			interpreter.run_command(input);
 		}
 	}
 }

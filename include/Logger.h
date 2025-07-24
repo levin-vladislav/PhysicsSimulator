@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <format>
 #include <chrono>
@@ -5,7 +6,7 @@
 #include <sstream>
 #include <iomanip>
 
-#pragma once
+
 
 
 class Logger
