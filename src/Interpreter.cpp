@@ -27,7 +27,7 @@ void Interpreter::init_commands()
 
             std::ostringstream oss;
             oss << std::put_time(&tm_safe, "%H:%M:%S");
-            std::cout << oss.str() << '\n';
+            std::cout << "Current time: " << oss.str() << '\n';
         });
     add_command(time);
 
@@ -57,7 +57,12 @@ void Interpreter::run_command(std::string command)
     while (iss >> arg) args.push_back(arg);
 
     if (commands.contains(cmd_name)) 
-    {
+    {   
+        if (args.size() != commands[cmd_name].get_args().size())
+        {
+            logger.error("Command '" + cmd_name + "' expects " + std::to_string(commands[cmd_name].get_args().size()) + " arguments, but got " + std::to_string(args.size()));
+            return;
+        }
         commands[cmd_name].execute(args);
     }
     else
