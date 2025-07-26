@@ -50,12 +50,13 @@ public:
 	void run_command(std::string command);
     void add_command(Command command);
     void init_commands();
+    static void execute(std::string command, std::vector<std::string> args);
 	
 
 private:
-	Logger logger;
+	static Logger logger;
 
-    std::unordered_map <std::string, Command> commands;
+    static std::unordered_map <std::string, Command> commands;
 
 };
 

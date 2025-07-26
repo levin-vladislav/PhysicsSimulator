@@ -4,6 +4,7 @@
 #include <chrono>
 #include <mutex>
 #include <sstream>
+#include <atomic>
 #include <iomanip>
 
 
