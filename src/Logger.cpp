@@ -36,7 +36,7 @@ std::string Logger::get_time()
 void Logger::log(std::string text, std::string type)
 {
     std::lock_guard<std::mutex> lock(Logger::log_mutex);
-    std::cout << "\033[2K";
+    std::cout << "\033[2K\r";
     if (type == "ERROR")
     {
         std::cout << "\033[31m";

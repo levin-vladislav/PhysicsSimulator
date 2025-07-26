@@ -1,9 +1,6 @@
 #include "Interpreter.h"
 
-Logger Interpreter::logger = Logger("Interpreter");
-std::unordered_map <std::string, Command> Interpreter::commands;
-
-Interpreter::Interpreter()
+Interpreter::Interpreter() : logger(Logger("Interpreter"))
 {
     init_commands();
 	logger.info("Initialized.");
@@ -12,16 +9,22 @@ Interpreter::Interpreter()
 void Interpreter::init_commands()
 {
     Command echo = Command("echo");
-    echo.set_callback([](std::vector<std::any> args) {
-        std::string text = std::any_cast<std::string>(args[0]);
-        std::cout << text << std::endl;
+    echo.add_description("echo [text] - returns text");
+    echo.set_callback([this](std::string args) {
+        if (args.empty())
+        {
+            logger.error("Command \"echo\" expected arguments but 0 were given.");
+            return;
+        }
+        std::cout << "\033[2K\r";
+        std::cout << args << std::endl;
         });
-    echo.add_argument("text", ArgType::STRING);
     add_command(echo);
 
 
     Command time = Command("time");
-    time.set_callback([](std::vector<std::any> args)
+    time.add_description("time - returns exact time");
+    time.set_callback([](std::string args)
         {
             std::time_t now = std::time(nullptr);
             std::tm tm_safe;
@@ -34,48 +37,78 @@ void Interpreter::init_commands()
     add_command(time);
 
     Command delay = Command("delay");
-    delay.set_callback([](std::vector<std::any> args)
+    delay.add_description("delay [time (seconds)] [command] - runs the command with the specified delay.");
+    delay.set_callback([this](std::string args)
     {
-            int time = std::any_cast<int>(args[0]);
-            std::string command = std::any_cast<std::string>(args[1]);
-            std::vector<std::any> args_(args.begin() + 2, args.end());
-            std::vector<std::string> new_args;
-            for (const auto& item : args_) {
-                if (item.type() == typeid(int)) {
-                    new_args.push_back(std::to_string(std::any_cast<int>(item)));
-                }
-                else if (item.type() == typeid(float)) {
-                    new_args.push_back(std::to_string(std::any_cast<float>(item)));
-                }
-                else if (item.type() == typeid(double)) {
-                    new_args.push_back(std::to_string(std::any_cast<double>(item)));
-                }
-                else if (item.type() == typeid(std::string)) {
-                    new_args.push_back(std::any_cast<std::string>(item));
-                }
+            std::istringstream iss(args);
+            std::string time_str;
+            std::string command;
+            std::string new_args;
+            int time;
+
+            iss >> time_str;
+            if (time_str.empty())
+            {
+                logger.error("Invalid arguments given");
             }
-            auto f = [time, command, new_args]() {
-                std::this_thread::sleep_for(std::chrono::seconds(time));
-                Interpreter::execute(command, new_args);
-                };
-            std::thread t = std::thread(f);
             
+            try {
+                size_t pos;
+                time = std::stoi(time_str, &pos);  
+                if (pos != time_str.length()) { 
+                    logger.error("Not a number value was given");
+                    return;
+                }
+                
+            }
+            catch (...) {
+                logger.error("Not a number value was given");
+                return;
+            }
+
+            iss >> command;
+            
+            std::getline(iss, new_args);
+            
+            auto f = [this, time, command, new_args]() {
+                std::this_thread::sleep_for(std::chrono::seconds(time));
+                this->execute(command, new_args);
+                };
+
+            std::thread t = std::thread(f);
+            t.detach();
     });
-    delay.add_argument("time", ArgType::INT);
-    delay.add_argument("command", ArgType::STRING);
-    delay.add_argument("args", ArgType::STRING);
     add_command(delay);
 
 
     Command help = Command("help");
-    help.set_callback([](std::vector<std::any> args)
+    help.add_description("help - show that list");
+    help.set_callback([this](std::string args)
         {
-            std::cout << "List of the commands:" << std::endl;
-            std::cout << "echo [text] - print everything given next" << std::endl;
-            std::cout << "time - print current time" << std::endl;
-            std::cout << "exit (or quit) - quit the program" << std::endl;
-            std::cout << "help - show that list" << std::endl;
-            std::cout << "delay [time (seconds)] [command] - runs a command with given delay" << std::endl;
+            if (args.empty())
+            {
+                std::cout << "List of the commands:" << std::endl;
+                for (auto it = commands.begin(); it != commands.end(); ++it)
+                {
+                    std::cout << it->second.get_description() << std::endl;
+                }
+            }
+
+            else
+            {
+                std::istringstream iss(args);
+                std::string command;
+                iss >> command;
+
+                if (!commands.contains(command)) {
+                    logger.error("The given command was not found: " + command);
+                    return;
+                }
+
+                std::cout << commands[command].get_description() << std::endl;
+                
+            }
+            
         });
 
     add_command(help);
@@ -86,11 +119,10 @@ void Interpreter::run_command(std::string command)
 {
     std::istringstream iss(command);
     std::string cmd_name;
-    iss >> cmd_name;
+    std::string args;
 
-    std::vector<std::string> args;
-    std::string arg;
-    while (iss >> arg) args.push_back(arg);
+    iss >> cmd_name;
+    std::getline(iss, args);
 
     execute(cmd_name, args);
 }
@@ -100,15 +132,10 @@ void Interpreter::add_command(Command command)
     commands[command.get_name()] = command;
 }
 
-void Interpreter::execute(std::string command, std::vector<std::string> args)
+void Interpreter::execute(std::string command, std::string args)
 {
     if (commands.contains(command))
     {
-        if (args.size() > commands[command].get_args().size())
-        {
-            logger.error("Command '" + command + "' expects " + std::to_string(commands[command].get_args().size()) + " arguments, but got " + std::to_string(args.size()));
-            return;
-        }
         commands[command].execute(args);
     }
     else
@@ -117,37 +144,22 @@ void Interpreter::execute(std::string command, std::vector<std::string> args)
     }
 }
 
-void Command::add_argument(const std::string& arg_name, ArgType type) {
-    args.push_back({ arg_name, type });
-}
-
-void Command::set_callback(std::function<void(std::vector<std::any>)> cb) {
+void Command::set_callback(std::function<void(std::string)> cb) {
     callback = cb;
 }
 
-
-
 const std::string& Command::get_name() const { return name; }
-const std::vector<ArgumentSpec>& Command::get_args() const { return args; }
 
-void Command::execute(const std::vector<std::string>& input_args) const {
-    using CommandArgs = std::vector<std::any>;
-    CommandArgs parsed;
-    for (size_t i = 0; i < input_args.size(); ++i) {
-        switch (args[i].type) {
-        case ArgType::INT:
-            parsed.push_back(std::stoi(input_args[i]));
-            break;
-        case ArgType::FLOAT:
-            parsed.push_back(std::stof(input_args[i]));
-            break;
-        case ArgType::STRING:
-            parsed.push_back(input_args[i]);
-            break;
-        }
-    }
-    if (callback) {
-        callback(parsed);
-    }
+void Command::execute(const std::string& input_args) const {
+    callback(input_args);
 }
 
+void Command::add_description(std::string description)
+{
+    this->description = description;
+}
+
+std::string Command::get_description()
+{
+    return description;
+}

@@ -24,21 +24,23 @@ struct ArgumentSpec
 
 class Command {
     std::string name;
-    std::vector<ArgumentSpec> args;
-    std::function<void(std::vector<std::any>)> callback;
+    std::function<void(std::string)> callback;
+    std::string description;
 
 public:
     Command() {}
     Command(const std::string& name) : name(name) {}
 
-    void add_argument(const std::string& arg_name, ArgType type);
 
-    void set_callback(std::function<void(std::vector<std::any>)> cb);
+    void set_callback(std::function<void(std::string cb)>);
 
     const std::string& get_name() const;
     const std::vector<ArgumentSpec>& get_args() const;
 
-    void execute(const std::vector<std::string>& input_args) const;
+    void execute(const std::string& input_args) const;
+
+    void add_description(std::string description);
+    std::string get_description();
 };
 
 
@@ -50,13 +52,13 @@ public:
 	void run_command(std::string command);
     void add_command(Command command);
     void init_commands();
-    static void execute(std::string command, std::vector<std::string> args);
+    void execute(std::string command, std::string args);
 	
 
 private:
-	static Logger logger;
+	Logger logger;
 
-    static std::unordered_map <std::string, Command> commands;
+    std::unordered_map <std::string, Command> commands;
 
 };
 
