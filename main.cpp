@@ -8,12 +8,14 @@ int main()
     std::atomic<bool> shutdown = false;
 
     Logger logger = Logger("MAIN");
+    Logger::start_logging();
     logger.info("Program has been started.");
     Engine engine = Engine();
     Dispatcher dispatcher = Dispatcher(&engine, &shutdown);
     
-    dispatcher.start();
     engine.start();
+    dispatcher.start();
+    
 
     while (!shutdown.load()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));

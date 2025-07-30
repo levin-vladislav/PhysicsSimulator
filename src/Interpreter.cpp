@@ -16,15 +16,15 @@ void Interpreter::init_commands()
             logger.error("Command \"echo\" expected arguments but 0 were given.");
             return;
         }
-        std::cout << "\033[2K\r";
-        std::cout << args << std::endl;
+        
+        logger.raw(args);
         });
     add_command(echo);
 
 
     Command time = Command("time");
     time.add_description("time - returns exact time");
-    time.set_callback([](std::string args)
+    time.set_callback([this](std::string args)
         {
             std::time_t now = std::time(nullptr);
             std::tm tm_safe;
@@ -32,7 +32,8 @@ void Interpreter::init_commands()
 
             std::ostringstream oss;
             oss << std::put_time(&tm_safe, "%H:%M:%S");
-            std::cout << "Current time: " << oss.str() << '\n';
+            logger.raw("Current time: " + oss.str());
+
         });
     add_command(time);
 
@@ -87,10 +88,10 @@ void Interpreter::init_commands()
         {
             if (args.empty())
             {
-                std::cout << "List of the commands:" << std::endl;
+                logger.raw("List of the commands:");
                 for (auto it = commands.begin(); it != commands.end(); ++it)
                 {
-                    std::cout << it->second.get_description() << std::endl;
+                    logger.raw(it->second.get_description());
                 }
             }
 
@@ -105,7 +106,7 @@ void Interpreter::init_commands()
                     return;
                 }
 
-                std::cout << commands[command].get_description() << std::endl;
+                logger.raw(commands[command].get_description());
                 
             }
             

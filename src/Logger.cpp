@@ -1,25 +1,30 @@
 #include "Logger.h"
 
+std::thread Logger::logger_thread;
+std::queue<std::string> Logger::log_queue;
 std::mutex Logger::log_mutex;
+std::condition_variable Logger::log_cv;
 
 Logger::Logger(std::string name) : name(name) {}
 
 void Logger::info(std::string text)
 {   
-    std::thread t(&Logger::log, this, text, "INFO");
-    t.join();
+    log(text, "INFO");
 }
 
 void Logger::warn(std::string text)
 {
-    std::thread t(&Logger::log, this, text, "WARN");
-    t.join();
+    log(text, "WARN");
 }
 
 void Logger::error(std::string text)
 {
-    std::thread t(&Logger::log, this, text, "ERROR");
-    t.join();
+    log(text, "ERROR");
+}
+
+void Logger::raw(std::string text)
+{
+    log(text, "RAW");
 }
 
 std::string Logger::get_time()
@@ -30,21 +35,62 @@ std::string Logger::get_time()
 
     std::ostringstream oss;
     oss << std::put_time(&tm_safe, "%H:%M:%S");
-    return "[" + oss.str() + "]";
+    return oss.str();
 }
 
 void Logger::log(std::string text, std::string type)
 {
-    std::lock_guard<std::mutex> lock(Logger::log_mutex);
-    std::cout << "\033[2K\r";
-    if (type == "ERROR")
+    std::lock_guard<std::mutex> lock(log_mutex);
+    std::string message;
+    
+    if (type == "RAW")
     {
-        std::cout << "\033[31m";
+        message = text;
     }
-    else if (type == "WARN")
+    else
     {
-        std::cout << "\033[33m";
+        if (type == "ERROR")
+        {
+            message = "\033[31m";
+        }
+
+        else if (type == "WARN")
+        {
+            message = "\033[33m";
+        }
+        else if (type != "INFO") return;
+        message += std::format("[{0}] [{1}/{2}]: {3}\033[0m", get_time(), name, type, text);
     }
-    std::cout << get_time() << " [" << name << "/" << type << "]: " << text << "\n";
-    std::cout << "\033[0m";
+    
+    log_queue.push(message);
+    log_cv.notify_one();
+}
+
+
+void Logger::start_logging()
+{
+    logger_thread = std::thread([]
+        {
+            while (true)
+            {
+                std::unique_lock<std::mutex> lock(log_mutex);
+                log_cv.wait(lock, [] { return !log_queue.empty(); });
+
+                while (!log_queue.empty())
+                {
+                    std::string msg = log_queue.front();
+                    log_queue.pop();
+                    lock.unlock();
+
+                    std::cout << "\33[2K\r" << msg << std::endl;
+
+                    std::cout << ">>> " << std::flush;
+
+                    lock.lock();
+
+                }
+            }
+        }
+
+    );
 }
