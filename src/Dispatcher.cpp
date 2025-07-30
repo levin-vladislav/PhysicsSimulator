@@ -44,6 +44,7 @@ void Dispatcher::start()
 void Dispatcher::stop()
 {
 	running.store(false);
+	Logger::stop();
 	if (t.joinable())
 	{
 		t.join();
