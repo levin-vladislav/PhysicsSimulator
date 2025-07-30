@@ -19,6 +19,7 @@ class Logger
 	static std::queue<std::string> log_queue;
 	static std::mutex log_mutex;
 	static std::condition_variable log_cv;
+	static std::atomic<bool> running;
 	
 public:
 	Logger(std::string name);
@@ -27,6 +28,7 @@ public:
 	void error(std::string text);
 	void raw(std::string message);
 	static void start_logging();
+	static void stop();
 
 	
 	

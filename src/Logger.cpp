@@ -4,6 +4,7 @@ std::thread Logger::logger_thread;
 std::queue<std::string> Logger::log_queue;
 std::mutex Logger::log_mutex;
 std::condition_variable Logger::log_cv;
+std::atomic<bool> Logger::running = true;
 
 Logger::Logger(std::string name) : name(name) {}
 
@@ -71,10 +72,10 @@ void Logger::start_logging()
 {
     logger_thread = std::thread([]
         {
-            while (true)
+            while (running.load())
             {
                 std::unique_lock<std::mutex> lock(log_mutex);
-                log_cv.wait(lock, [] { return !log_queue.empty(); });
+                log_cv.wait(lock, [] { return !log_queue.empty() || !running.load(); });
 
                 while (!log_queue.empty())
                 {
@@ -93,4 +94,15 @@ void Logger::start_logging()
         }
 
     );
+}
+
+
+void Logger::stop()
+{
+    running.store(false);
+    log_cv.notify_one();
+    if (logger_thread.joinable())
+    {
+        logger_thread.join();
+    }
 }
