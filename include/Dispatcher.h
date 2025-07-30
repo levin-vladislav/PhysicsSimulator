@@ -1,7 +1,9 @@
+#pragma once
 #include "Interpreter.h"
 #include "Logger.h"
 #include <atomic>
 #include <thread>
+
 
 class Engine;
 

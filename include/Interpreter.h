@@ -11,8 +11,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
-
-
+#include "Engine.h"
 
 enum class ArgType { INT, FLOAT, STRING };
 
@@ -35,7 +34,6 @@ public:
     void set_callback(std::function<void(std::string cb)>);
 
     const std::string& get_name() const;
-    const std::vector<ArgumentSpec>& get_args() const;
 
     void execute(const std::string& input_args) const;
 
@@ -54,6 +52,7 @@ public:
     void init_commands();
     void execute(std::string command, std::string args);
 	
+    Engine* engine_ptr;
 
 private:
 	Logger logger;

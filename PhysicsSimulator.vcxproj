@@ -164,6 +164,7 @@
     <ClCompile Include="src\Interpreter.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\PhysicsEngine.cpp" />
+    <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

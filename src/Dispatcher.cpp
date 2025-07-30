@@ -8,6 +8,7 @@ Dispatcher::Dispatcher(Engine* engine, std::atomic<bool>* shutdown) :
 	logger(Logger("Dispatcher")), 
 	shutdown_ptr(shutdown)
 {
+	interpreter.engine_ptr = engine;
 	logger.info("Initialized.");
 }
 

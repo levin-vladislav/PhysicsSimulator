@@ -1,4 +1,5 @@
 #include "Interpreter.h"
+#include "Engine.h"
 
 Interpreter::Interpreter() : logger(Logger("Interpreter"))
 {
@@ -8,6 +9,7 @@ Interpreter::Interpreter() : logger(Logger("Interpreter"))
 
 void Interpreter::init_commands()
 {
+    // echo [text] - returns text
     Command echo = Command("echo");
     echo.add_description("echo [text] - returns text");
     echo.set_callback([this](std::string args) {
@@ -22,6 +24,7 @@ void Interpreter::init_commands()
     add_command(echo);
 
 
+    // time - returns exact time
     Command time = Command("time");
     time.add_description("time - returns exact time");
     time.set_callback([this](std::string args)
@@ -37,8 +40,10 @@ void Interpreter::init_commands()
         });
     add_command(time);
 
+
+    // delay [time (seconds)] [command] - runs the command with the specified delay.
     Command delay = Command("delay");
-    delay.add_description("delay [time (seconds)] [command] - runs the command with the specified delay.");
+    delay.add_description("delay [time (seconds)] [command] - runs the command with the specified delay");
     delay.set_callback([this](std::string args)
     {
             std::istringstream iss(args);
@@ -82,6 +87,60 @@ void Interpreter::init_commands()
     add_command(delay);
 
 
+    // body_list - returns the list of all bodies
+    Command body_list = Command("body_list");
+    body_list.add_description("body_list - returns the list of all bodies");
+    body_list.set_callback([this](std::string args)
+        {
+            engine_ptr->physicsEngine.log_bodies();
+        });
+    add_command(body_list);
+
+
+    // create [x] [y] [mass] - creates a kinematic rigid body in given coordinates
+    Command create = Command("create");
+    create.add_description("create [x] [y] [mass] - creates a kinematic rigid body in given coordinates");
+    create.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string x_string;
+            std::string y_string;
+            std::string m_string;
+
+            if (!(iss >> x_string >> y_string >> m_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+
+            try
+            {
+                float x = std::stof(x_string);
+                float y = std::stof(y_string);
+                float m = std::stof(m_string);
+                engine_ptr->request(CreateBodyRequest{ glm::vec2(x, y), 
+                                                       glm::vec2(0.0f, 0.0f),
+                                                       m,
+                                                       BodyType::KINEMATIC});
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(create);
+
+
+    // help - show that list
     Command help = Command("help");
     help.add_description("help - show that list");
     help.set_callback([this](std::string args)
@@ -111,7 +170,6 @@ void Interpreter::init_commands()
             }
             
         });
-
     add_command(help);
 }
 

@@ -1,4 +1,5 @@
 #include "Logger.h"
+#pragma once
 
 
 class GraphicsEngine

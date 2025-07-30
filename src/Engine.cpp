@@ -1,5 +1,5 @@
-#include "Engine.h"
 #include "Dispatcher.h"
+#include "Engine.h"
 
 Engine::Engine() : running(false), logger(Logger("Engine"))
 {
@@ -48,4 +48,10 @@ void Engine::main_loop()
 
 	}
 }
+
+void Engine::request(CreateBodyRequest request)
+{
+	physicsEngine.create_body(request);
+}
+
 

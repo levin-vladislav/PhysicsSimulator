@@ -1,9 +1,11 @@
+#pragma once
 #include "GraphicsEngine.h"
 #include "PhysicsEngine.h"
-#include <Logger.h>
+#include "Logger.h"
 #include <atomic>
 #include <thread>
 #include <chrono>
+#include "utils.h"
 
 class Dispatcher;
 
@@ -15,11 +17,13 @@ public:
 	void start();
 	void stop();
 	bool is_running() const;
+	void request(CreateBodyRequest request);
+
+	PhysicsEngine physicsEngine;
+	GraphicsEngine graphicsEngine;
 
 private:
 	std::thread t;
-	PhysicsEngine physicsEngine;
-	GraphicsEngine graphicsEngine;
 	std::atomic<bool> running;
 	Logger logger;
 
