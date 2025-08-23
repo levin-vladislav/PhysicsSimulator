@@ -5,7 +5,7 @@
 // PhysicsEngine
 float PhysicsEngine::linearDamping = 1.0;
 float PhysicsEngine::angularDamping = 1.0;
-float PhysicsEngine::g = 9.8;
+float PhysicsEngine::g = 9.8f;
 
 PhysicsEngine::PhysicsEngine() : running(true), logger(Logger("PhysicsEngine"))
 {
@@ -19,13 +19,16 @@ bool PhysicsEngine::is_running() const
 
 void PhysicsEngine::update(float dt)
 {
+
 	for (auto& body : bodies)
 	{
+		if (!body) continue;
+		body->update(dt);
 		if (RigidBody* rigid = dynamic_cast<RigidBody*>(body.get()))
 		{
 			rigid->applyForce(glm::vec2(0.0f, -rigid->mass * g));
 		}
-		body->update(dt);
+		
 	}
 }
 
@@ -93,8 +96,10 @@ Body* PhysicsEngine::get_body(int id)
 
 std::string Body::get_info()
 {
-	return std::format("Body {}: pos [{}, {}]; velocity [{}, {}]", id, pos.x, pos.y,
-		velocity.x, velocity.y);
+	return std::format("Body {}: pos [{}, {}]; velocity [{}, {}], acceleration [{}, {}]", 
+		id, pos.x, pos.y,
+		velocity.x, velocity.y, 
+		acceleration.x, acceleration.y);
 }
 
 Body::~Body() {}

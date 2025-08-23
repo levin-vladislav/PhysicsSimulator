@@ -4,6 +4,11 @@
 #include <chrono>
 #include <mutex>
 #include <sstream>
+#include <fstream>
+#include <filesystem>
+#include <iomanip>
+#include <ctime>
+#include <string>
 #include <atomic>
 #include <iomanip>
 #include <queue>
@@ -39,4 +44,5 @@ private:
 
 	void log(std::string text, std::string type);
 };
+
 

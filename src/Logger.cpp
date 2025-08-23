@@ -1,5 +1,7 @@
 #include "Logger.h"
 
+namespace fs = std::filesystem;
+
 std::thread Logger::logger_thread;
 std::queue<std::string> Logger::log_queue;
 std::mutex Logger::log_mutex;
@@ -7,6 +9,41 @@ std::condition_variable Logger::log_cv;
 std::atomic<bool> Logger::running = true;
 
 Logger::Logger(std::string name) : name(name) {}
+
+std::string generateLogFileName() {
+    // get date
+    std::time_t now = std::time(nullptr);
+    std::tm tm{};
+    localtime_s(&tm, &now);
+
+    std::ostringstream date;
+    date << std::put_time(&tm, "%Y-%m-%d");
+    std::string prefix = date.str();
+
+    int maxIndex = 0;
+
+    // scan folder for files with this prefix
+    std::string logDir = "logs";
+    for (const auto& entry : fs::directory_iterator(logDir)) {
+        std::string name = entry.path().filename().string();
+        if (name.rfind(prefix, 0) == 0) {  // starts with prefix
+            // parse "-N.txt"
+            size_t dash = name.find_last_of('-');
+            size_t dot = name.find_last_of('.');
+            if (dash != std::string::npos && dot != std::string::npos) {
+                try {
+                    int num = std::stoi(name.substr(dash + 1, dot - dash - 1));
+                    if (num > maxIndex) maxIndex = num;
+                }
+                catch (...) {}
+            }
+        }
+    }
+
+    int nextIndex = maxIndex + 1;
+    return prefix + "-" + std::to_string(nextIndex) + ".txt";
+}
+
 
 void Logger::info(std::string text)
 {   
@@ -60,7 +97,7 @@ void Logger::log(std::string text, std::string type)
             message = "\033[33m";
         }
         else if (type != "INFO") return;
-        message += std::format("[{0}] [{1}/{2}]: {3}\033[0m", get_time(), name, type, text);
+        message += std::format("[{0}] [{1}/{2}]: {3}", get_time(), name, type, text);
     }
     
     log_queue.push(message);
@@ -72,6 +109,13 @@ void Logger::start_logging()
 {
     logger_thread = std::thread([]
         {
+            std::ofstream latest("logs/latest_log.txt");
+            std::ofstream dated("logs/" + generateLogFileName());
+            if (!latest.is_open() || !dated.is_open()) {
+                // Handle error
+                std::cerr << "Failed to open log file!" << std::endl;
+                return 1;
+            }
             while (running.load())
             {
                 std::unique_lock<std::mutex> lock(log_mutex);
@@ -83,7 +127,10 @@ void Logger::start_logging()
                     log_queue.pop();
                     lock.unlock();
 
-                    std::cout << "\33[2K\r" << msg << std::endl;
+                    latest << msg << '\n';
+                    dated << msg << '\n';
+
+                    std::cout << "\33[2K\r" << msg << "\033[0m" << std::endl;
 
                     std::cout << ">>> " << std::flush;
 
@@ -106,3 +153,5 @@ void Logger::stop()
         logger_thread.join();
     }
 }
+
+
