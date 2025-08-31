@@ -45,12 +45,14 @@ void Engine::main_loop()
 		last_time = now;
 
 		update(dt);
+		// Runs update function with dt equal to time difference between ticks
 
 	}
 }
 
 void Engine::request(CreateBodyRequest request)
 {
+	// Manages requesting. Later could be request via JSON
 	physicsEngine.create_body(request);
 }
 

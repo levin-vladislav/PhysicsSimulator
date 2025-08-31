@@ -5,6 +5,8 @@
 #include <glm/vec2.hpp>
 #include "utils.h"
 #include <string>
+#include <vector>
+#include <unordered_map>
 
 class Body
 {

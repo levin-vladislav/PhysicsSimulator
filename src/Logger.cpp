@@ -2,6 +2,7 @@
 
 namespace fs = std::filesystem;
 
+// Declaring static variables
 std::thread Logger::logger_thread;
 std::queue<std::string> Logger::log_queue;
 std::mutex Logger::log_mutex;
@@ -10,7 +11,12 @@ std::atomic<bool> Logger::running = true;
 
 Logger::Logger(std::string name) : name(name) {}
 
+
 std::string generateLogFileName() {
+    // Function generating log file name in format:
+    // YY-MM-DD-N.txt      N - number of logs this day
+
+
     // get date
     std::time_t now = std::time(nullptr);
     std::tm tm{};
@@ -44,7 +50,6 @@ std::string generateLogFileName() {
     return prefix + "-" + std::to_string(nextIndex) + ".txt";
 }
 
-
 void Logger::info(std::string text)
 {   
     log(text, "INFO");
@@ -67,6 +72,7 @@ void Logger::raw(std::string text)
 
 std::string Logger::get_time()
 {
+    // Don't forget to add check of OS!
     std::time_t now = std::time(nullptr);
     std::tm tm_safe; 
     localtime_s(&tm_safe, &now);

@@ -20,6 +20,7 @@
 
 class Logger
 {
+	// static variables to manage all of the loggers
 	static std::thread logger_thread;
 	static std::queue<std::string> log_queue;
 	static std::mutex log_mutex;
@@ -28,17 +29,22 @@ class Logger
 	
 public:
 	Logger(std::string name);
-	void info(std::string text);
-	void warn(std::string text);
-	void error(std::string text);
-	void raw(std::string message);
+
+	// Methods to output data
+	void info(std::string text);    //  [<current_time>][<name>/INFO] <text> 
+	void warn(std::string text);    //  [<current_time>][<name>/WARN] <text> (color - yellow)
+	void error(std::string text);   //  [<current_time>][<name>/INFO] <text> (color - red)
+	void raw(std::string message);  //  <text>
+
+
+    // Static methods to manage all loggers at once
 	static void start_logging();
 	static void stop();
 
 	
-	
 private:
 	
+	// 
 	std::string name;
 	std::string get_time();
 

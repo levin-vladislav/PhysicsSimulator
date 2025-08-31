@@ -13,19 +13,22 @@ class Engine
 {	
 public:
 	Engine();
-	void update(float dt);
-	void start();
-	void stop();
-	bool is_running() const;
-	void request(CreateBodyRequest request);
 
-	PhysicsEngine physicsEngine;
-	GraphicsEngine graphicsEngine;
+	void update(float dt); // main function, runs every tick
+	void start(); // starts Engine main loop
+	void stop();  // stops Engine main loop
+
+	bool is_running() const;
+
+	void request(CreateBodyRequest request); // Method for proper Dispatcher <=> Body interaction
+
+	PhysicsEngine physicsEngine; // Manages physics in the project
+	GraphicsEngine graphicsEngine; // Manages graphics in the project
 
 private:
-	std::thread t;
+	std::thread t; // Engine thread
 	std::atomic<bool> running;
-	Logger logger;
+	Logger logger; // Engine logger
 
 	void main_loop();
 };
