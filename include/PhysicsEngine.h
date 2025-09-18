@@ -10,6 +10,7 @@
 
 class Body
 {
+	// Basic body object. Contains all primary methods and properties
 public:
 	int id;
 	float mass;
@@ -40,37 +41,9 @@ protected:
 	
 };
 
-class PhysicsEngine
-{
-public:
-	PhysicsEngine();
-	void update(float dt);
-	bool is_running() const;
-
-	void log_body(int id);
-	void log_bodies();
-
-	void create_body(CreateBodyRequest request);
-	int add_body(std::unique_ptr<Body> body);
-	Body* get_body(int id);
-	void remove_body(int id);
-
-	static float linearDamping;
-	static float angularDamping;
-
-	static float g;
-
-private:
-	std::vector<std::unique_ptr<Body>> bodies;
-	std::unordered_map<int, size_t> id2index;
-	Logger logger;
-	std::atomic<bool> running;
-
-	int next_id = 0;
-};
-
 class RigidBody : public Body
 {
+	// A sub-class for rigid bodies. 
 public:
 	RigidBody(BodyType type);
 
@@ -99,4 +72,33 @@ public:
 
 };
 
+class PhysicsEngine
+{
+	// Object managing the physics of the simulation
+public:
+	PhysicsEngine();
+	void update(float dt);
+	bool is_running() const;
+
+	void log_body(int id);
+	void log_bodies();
+
+	void create_body(CreateBodyRequest request); // Function that accept a request of creating a body
+	int add_body(std::unique_ptr<Body> body);
+	Body* get_body(int id);
+	void remove_body(int id);
+
+	static float linearDamping;
+	static float angularDamping;
+
+	static float g;
+
+private:
+	std::vector<std::unique_ptr<Body>> bodies; // Vector of pointers to bodies
+	std::unordered_map<int, size_t> id2index; // Map of bodies' ids to index in 'bodies' vector
+	Logger logger;
+	std::atomic<bool> running;
+
+	int next_id = 0; // Stores id of last body added
+};
 

@@ -20,7 +20,11 @@
 
 class Logger
 {
+	// Object that safely logs to console
+
+
 	// static variables to manage all of the loggers
+	// Each og the different loggers use one thread
 	static std::thread logger_thread;
 	static std::queue<std::string> log_queue;
 	static std::mutex log_mutex;

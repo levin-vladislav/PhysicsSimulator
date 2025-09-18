@@ -22,6 +22,7 @@ struct ArgumentSpec
 };
 
 class Command {
+    // Command that can be executed from console
     std::string name;
     std::function<void(std::string)> callback;
     std::string description;
@@ -29,7 +30,6 @@ class Command {
 public:
     Command() {}
     Command(const std::string& name) : name(name) {}
-
 
     void set_callback(std::function<void(std::string cb)>);
 
@@ -44,6 +44,7 @@ public:
 
 class Interpreter
 {
+    // Object managing commands cought by Dispatcher
 public:
 	Interpreter();
 

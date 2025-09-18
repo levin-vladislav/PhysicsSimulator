@@ -9,6 +9,16 @@ Interpreter::Interpreter() : logger(Logger("Interpreter"))
 
 void Interpreter::init_commands()
 {
+    // Registering commands
+    // Command [command_name] = Command(“[command_name]”);
+    // [command_name].add_description(“This is displayed when /“help/” is called”);
+    // [command_name].set_callback([this](std::string args) {
+    //    // Body of function. Here can be added parsing of 'args' string and 
+    //    // what function does
+    // };)
+    //
+
+
     // echo [text] - returns text
     Command echo = Command("echo");
     echo.add_description("echo [text] - returns text");
@@ -44,8 +54,7 @@ void Interpreter::init_commands()
     // delay [time (seconds)] [command] - runs the command with the specified delay.
     Command delay = Command("delay");
     delay.add_description("delay [time (seconds)] [command] - runs the command with the specified delay");
-    delay.set_callback([this](std::string args)
-    {
+    delay.set_callback([this](std::string args){
             std::istringstream iss(args);
             std::string time_str;
             std::string command;
@@ -82,8 +91,7 @@ void Interpreter::init_commands()
                 };
 
             std::thread t = std::thread(f);
-            t.detach();
-    });
+            t.detach();});
     add_command(delay);
 
 
@@ -176,6 +184,7 @@ void Interpreter::init_commands()
 
 void Interpreter::run_command(std::string command)
 {
+    // Seperates command name and args
     std::istringstream iss(command);
     std::string cmd_name;
     std::string args;

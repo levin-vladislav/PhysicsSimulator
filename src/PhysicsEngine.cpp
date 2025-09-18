@@ -61,6 +61,7 @@ void PhysicsEngine::remove_body(int id)
 
 void PhysicsEngine::create_body(CreateBodyRequest request)
 {
+	// Creates body with data got from CreateBodyRequest
 	auto body = std::make_unique<RigidBody>(request.type);
 	body->setPos(request.pos);
 	body->setVelocity(request.velocity);

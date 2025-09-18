@@ -9,6 +9,7 @@ class Engine;
 
 class Dispatcher
 {
+	// Class listening managing input from console
 public:
 	Dispatcher(Engine* engine, std::atomic<bool>* shutdown_ptr);
 	

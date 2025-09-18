@@ -11,6 +11,7 @@ class Dispatcher;
 
 class Engine
 {	
+	// Object managing the simulation
 public:
 	Engine();
 
