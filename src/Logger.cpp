@@ -19,10 +19,10 @@ std::string generateLogFileName() {
 
     // get date
     std::time_t now = std::time(nullptr);
-    std::tm* localtime = std::localtime(&now);
-
+    std::tm tm{};
+    localtime_s(&tm, &now);
     std::ostringstream date;
-    date << std::put_time(&localtime, "%Y-%m-%d");
+    date << std::put_time(&tm, "%Y-%m-%d");
     std::string prefix = date.str();
 
     int maxIndex = 0;
@@ -48,7 +48,7 @@ std::string generateLogFileName() {
     int nextIndex = maxIndex + 1;
     return prefix + "-" + std::to_string(nextIndex) + ".txt";
 }
-
+ 
 void Logger::info(std::string text)
 {   
     log(text, "INFO");
@@ -73,10 +73,11 @@ std::string Logger::get_time()
 {
     // Don't forget to add check of OS!
     std::time_t now = std::time(nullptr);
-    std::tm* localtime = std::localtime(&now); 
+    std::tm tm_safe;
+    localtime_s(&tm_safe, &now);
 
     std::ostringstream oss;
-    oss << std::put_time(&localtime, "%H:%M:%S");
+    oss << std::put_time(&tm_safe, "%H:%M:%S");
     return oss.str();
 }
 
