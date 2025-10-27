@@ -1,20 +1,19 @@
 # Architecture
 In this file I will describe the architecture of the project, contents of each file etc.
 ## List of contents
-	1. Libraries
-	2. High-level Overview
-	3. Threads
-	4. Core systems
-		4.1 Engine system
-			4.1.1 Engine
-			4.1.2 PhysicsEngine
-			4.1.3 GraphicsEngine
-		4.2 Dispatcher
-		4.3 Interpreter
-		4.4 Logger
-	5. Data flow
-	6. Planned extensions
-## 1. Libraries
+1. [Libraries](#libraries)
+2. [High-level Overview](#high-level-overview)
+3. [Threads](#Threads)
+4. [Core systems](#core-system)
+	1. [Engine](#engine)
+	2. [PhysicsEngine](#physicsengine)
+	3. [GraphicsEngine](#graphicsengine)
+	4. [Dispatcher](#dispatcher)
+	5. [Interpreter](#interpreter)
+	2. [Logger](#logger)
+5. [Data flow](#data-flow)
+6. [Planned extensions](#planned-extensions)
+# 1. Libraries
 For graphics I use OpenGL. It contains GLFW (API for creating windows, context etc), GLEW (for extensions) and GLM (for math). 
 Also I use GLM math in physics because it's convinient.
 ## 2. High-level Overview
@@ -35,20 +34,18 @@ The Dispatcher Thread listens to user input and send it to Interpreter. In that 
 Actually, there is not one Interpreter thread. Each command Interpreter creates a seperated thread, and as the task is completed this thread is joined to Dispatcher thread.
 ## 4. Core systems
 There I will describe what each system does and how the interacts.
-### 4.1 Engine system
-This system runs in Engine Thread. It handles both graphics and physics.
-### 4.1.1 Engine
+### 4.1 Engine
 The Engine handles interaction with PhysicsEngine and GraphicsEngine, and also interacts with Dispatcher via pointers and system of requests.
 Each iteration of the loop it computes dt as the time difference between this and the previous tick and then updates PhysicsEngine and GraphicsEngine
-### 4.1.2 PhysicsEngine
+### 4.2 PhysicsEngine
 This module handles all the physics. The PhysicsEngine class manages creation of new bodies, computing possible collisions and updates each body.
 The class Body is a basic class containing all the properties each body has sych as id, mass, velocity and acceleration. This properties are protected. Also this body cannot be created, it can only be inheritated.
 The class RigidBody inheritated the Body class and adds accumulators of force and torque. Also now there are methods to apply forces or impulses (in case of collision).
-### 4.1.3 GraphicsEngine
+### 4.3 GraphicsEngine
 This module manages all the graphics via OpenGL. Right now it is not implemented yet.
-### 4.2 Dispatcher
+### 4.4 Dispatcher
 The Dispatcher send input from user to Interpreter to parse it.
-### 4.3 Interpreter
+### 4.5 Interpreter
 When the Interpreter gets the input from user, it divides the string to command (the first word) and arguments, and then tries to execute the command with this name and give the arguments.
 If command found, then it will parse the arguments. Each command parse it itself, it should be written in the body of function of command.
 The Interpreter stores the list of the commands.
@@ -60,7 +57,7 @@ Command [command_name] = Command(“[command_name]”);
     [Body of function. Here can be added parsing of 'args' string and the functionality of the function]
 };)
 ```
-### 4.4 Logger
+### 4.6 Logger
 The Logger class is created in each module. It has a name of the module and has 4 types of logging.
 
 	1. info(text) - prints information in the following format: [<current_time>][<logger_name>] text
