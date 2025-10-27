@@ -30,7 +30,7 @@ flowchart TD;
 	C-->F(Interpreter)
 	F-->C
 	A-->G[[LOGGER]]
-	C-.-|Request|B
+	C-.->|Request|B
 ```
 
 Also each of the classes can log messages via their own `Logger` instance, that sends log message to the common `LOGGER` thread.
@@ -76,8 +76,8 @@ If command found, then it will parse the arguments. Each command parse it itself
 The `Interpreter` stores the list of the commands.
 The `Command` class contains its name, description and function accepting a string as args. Commands are created and added in `Interpreter.init_commands()` using the following format:
 ```
-Command [command_name] = Command(“[command_name]”);
-[command_name].add_description(“This is displayed when /“help/” is called”);
+Command [command_name] = Command(â€œ[command_name]â€);
+[command_name].add_description(â€œThis is displayed when /â€œhelp/â€ is calledâ€);
 [command_name].set_callback([this](std::string args) {
     [Body of function. Here can be added parsing of 'args' string and the functionality of the function]
 };)
