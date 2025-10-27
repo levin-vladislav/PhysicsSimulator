@@ -19,7 +19,7 @@ public:
 	virtual ~Body();
 
 	inline glm::vec2 getPos() const { return pos; }
-	
+
 	inline glm::vec2 getVelocity() const { return velocity; }
 	inline glm::vec2 getAcceleration() const { return acceleration; };
 
@@ -38,7 +38,7 @@ protected:
 	glm::vec2 pos;
 	glm::vec2 velocity;
 	glm::vec2 acceleration;
-	
+
 };
 
 class RigidBody : public Body
