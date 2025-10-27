@@ -114,14 +114,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:/libraries/glew-2.1.0/include;D:/libraries/glfw-3.4.bin.WIN64/include;D:/libraries/glm-master;$(ProjectDir)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew-2.1.0\include;$(ProjectDir)lib\glfw-3.4.bin.WIN64\include;$(ProjectDir)include;$(ProjectDir)lib\glm-master</AdditionalIncludeDirectories>
       <TranslateIncludes>true</TranslateIncludes>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:/libraries/glew-2.1.0/lib/Release/x64;D:/libraries/glfw-3.4.bin.WIN64/lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\glew-2.1.0\lib\Release\x64;$(ProjectDir)lib\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -165,6 +166,15 @@
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\PhysicsEngine.cpp" />
     <ClCompile Include="src\utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Dispatcher.h" />
+    <ClInclude Include="include\Engine.h" />
+    <ClInclude Include="include\GraphicsEngine.h" />
+    <ClInclude Include="include\Interpreter.h" />
+    <ClInclude Include="include\Logger.h" />
+    <ClInclude Include="include\PhysicsEngine.h" />
+    <ClInclude Include="include\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
