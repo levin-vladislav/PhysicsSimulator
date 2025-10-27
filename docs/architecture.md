@@ -83,12 +83,13 @@ Command [command_name] = Command(“[command_name]”);
 };)
 ```
 ### Logger
-The `Logger` class is created in each module. It has a name of the module and has 4 types of logging.
+The `Logger` class is created in each module. It has a name of the module and has 4 types of formatting message.
 
-	1. info(text) - prints information in the following format: [<current_time>][<logger_name>] text
-	2. warn(text) - prints a warn like info(text), but the message is yellow
-	3. error(text) - prints a warn like info(text), but the message is red
-	4. raw(text) - doesn't format a text at all and prints it exactly as given.
+- info
+- warn
+- error
+- raw
+
 After calling this function, the text will get to the queue. After the queue it will be printed to console ad saved to the `"latest_log.txt"` file and to the file with current date and number of log.
 More about logger you can read [here](logger.md).
 ## 5. Data flow
