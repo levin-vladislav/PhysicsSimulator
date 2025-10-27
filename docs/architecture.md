@@ -13,7 +13,7 @@ In this file I will describe the architecture of the project, contents of each f
 	2. [Logger](#logger)
 5. [Data flow](#data-flow)
 6. [Planned extensions](#planned-extensions)
-# 1. Libraries
+## 1. Libraries
 For graphics I use OpenGL. It contains GLFW (API for creating windows, context etc), GLEW (for extensions) and GLM (for math). 
 Also I use GLM math in physics because it's convinient.
 ## 2. High-level Overview
@@ -21,6 +21,30 @@ First, when you run a program, the main thread starts the LOGGER thread, the Eng
 Then, if Dispatcher called the exit method, than main thread will stop all the processes and close the program.
 The Engine manages graphics and physics, the Dispatcher manages inputs from user and Logger manages output.
 The Engine has subclasses: GraphicsEngine and PhysicsEngine. Dispatcher also has a subclass - Interpreter. It parses user input and execute the commands.
+```mermaid
+flowchart TD;
+	A[MAIN]-->B(Engine)
+	A[MAIN]-->C(Dispatcher)
+	B-->D(PhysicsEngine)
+	B-->E(GraphicsEngine)
+	C-->F(Interpreter)
+	F-->C
+	A-->G[[LOGGER]]
+	C-.-|Request|B
+
+```
+Also each of the classes can log messages via their own Logger instance, that sends log message to the common LOGGER thread.
+```mermaid
+flowchart TD;
+	MAIN-.->A[LOGGER]
+	Engine-.->A
+	PhysicsEngine-.->A
+	GraphicsEngine-.->A
+	Dispatcher-.->A
+	Interpreter-.->A
+
+
+```
 ## 3. Threads
 ### 3.1 MAIN Thread
 Basically the MAIN thread only starts the other processes, then it awaits a closure of the program.
