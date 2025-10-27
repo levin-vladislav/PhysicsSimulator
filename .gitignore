@@ -32,8 +32,11 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-!lib/*
-!lib/glew-2.1.0/Release/*
+!libs/**/Release/
+!libs/**/Release/**
+
+!libs/**/lib*/
+!libs/**/lib*/**
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
