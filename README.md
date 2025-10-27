@@ -1,4 +1,4 @@
-# Introduction
+# 2D Physics Engine
 This is a small 2D engine for running simple rigidbody simulations.
 ## What can it do?
 1. Add the bodies with configurable properties like mass, shape, size, etc.
