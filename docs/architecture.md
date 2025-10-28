@@ -1,5 +1,5 @@
 # Architecture
-In this file I will describe the architecture of the project, contents of each file etc.
+This file describesw the project's architecture and the contents of each component.
 ## List of contents
 1. [Libraries](#libraries)
 2. [High-level Overview](#high-level-overview)
@@ -14,11 +14,10 @@ In this file I will describe the architecture of the project, contents of each f
 5. [Data flow](#data-flow)
 6. [Planned extensions](#planned-extensions)
 ## 1. Libraries
-For graphics I use `OpenGL`. It contains `GLFW` (API for creating windows, context etc), `GLEW` (for extensions) and `GLM` (for math). 
-Also I use `GLM` math in physics because it's convinient.
+For graphics, the project uses **OpenGL**, along with **GLFW** (for window and context creation), **GLEW** (for handling OpenGL extensions), and **GLM** (for mathematics). I also use **GLM** math  for physics calculations because it's convinient.
 ## 2. High-level Overview
 First, when you run a program, the main thread starts the `LOGGER` thread, the `Engine` thread and the `Dispatcher` thread. 
-Then, if `Dispatcher` called the exit method, than main thread will stop all the processes and close the program.
+If the `Dispatcher` calls the exit method, the main thread will stop all the processes and close the program.
 The `Engine` manages graphics and physics, the `Dispatcher` manages inputs from user and `Logger` manages output.
 The `Engine` has subclasses: `GraphicsEngine` and `PhysicsEngine`. `Dispatcher` also has a subclass - `Interpreter`. It parses user input and execute the commands.
 ```mermaid
@@ -60,19 +59,20 @@ Actually, there is not one `Interpreter` thread. Each command `Interpreter` crea
 There I will describe what each system does and how the interacts.
 ### Engine
 The `Engine` handles interaction with `PhysicsEngine` and `GraphicsEngine`, and also interacts with `Dispatcher` via pointers and system of requests.
-Each iteration of the loop it computes dt as the time difference between this and the previous tick and then updates `PhysicsEngine` and `GraphicsEngine`
+Each iteration computes `dt`, the time difference between the current and previous tick. Then it updates `PhysicsEngine` and `GraphicsEngine`
 ### PhysicsEngine
 This module handles all the physics. The `PhysicsEngine` class manages creation of new bodies, computing possible collisions and updates each body.
-The class `Body` is a basic class containing all the properties each body has sych as `id`, mass, velocity and acceleration. This properties are protected. Also this body cannot be created, it can only be inheritated.
+The `Body` class defines the common properties shared by all bodies, such as `id`, mass, velocity, and acceleration. 
+These properties are protected. The `Body` class cannot be instantiated directly — it must be inherited.
 The class `RigidBody` inheritated the `Body` class and adds accumulators of force and torque. Also now there are methods to apply forces or impulses (in case of collision).
 More about `PhysicsEngine` you can read [here](physics-engine.md).
 ### GraphicsEngine
 This module manages all the graphics via `OpenGL`. Right now it is not implemented yet.
 ### Dispatcher
-The `Dispatcher` send input from user to `Interpreter` to parse it.
+The `Dispatcher` sends user input from user to the `Interpreter` for parsing.
 ### Interpreter
 When the `Interpreter` gets the input from user, it divides the string to command (the first word) and arguments, and then tries to execute the command with this name and give the arguments.
-If command found, then it will parse the arguments. Each command parse it itself, it should be written in the body of function of command.
+If the command is found, it will parse its arguments. Each command parse it itself, it should be written in the body of function of command.
 The `Interpreter` stores the list of the commands.
 The `Command` class contains its name, description and function accepting a string as args. Commands are created and added in `Interpreter.init_commands()` using the following format:
 ```
@@ -90,7 +90,7 @@ The `Logger` class is created in each module. It has a name of the module and ha
 - error
 - raw
 
-After calling this function, the text will get to the queue. After the queue it will be printed to console ad saved to the `"latest_log.txt"` file and to the file with current date and number of log.
+After calling one of these functions, the message is added to the logging queue. Messages are printed to the console and written both to `latest_log.txt` and to a dated log file.
 More about logger you can read [here](logger.md).
 ## 5. Data flow
 After getting input from user by `Dispatcher`, it is sent to `Interpreter`, than `Interpreter` executes the command and sends a request to `Engine` if necessearly.
