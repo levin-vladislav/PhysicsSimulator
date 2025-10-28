@@ -1,5 +1,5 @@
 # Architecture
-This file describesw the project's architecture and the contents of each component.
+This file describes the project's architecture and the contents of each component.
 ## List of contents
 1. [Libraries](#1-libraries)
 2. [High-level Overview](#2-high-level-overview)
