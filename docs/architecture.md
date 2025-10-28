@@ -2,9 +2,9 @@
 This file describesw the project's architecture and the contents of each component.
 ## List of contents
 1. [Libraries](#libraries)
-2. [High-level Overview](#high-level-overview)
-3. [Threads](#Threads)
-4. [Core systems](#core-system)
+2. [High-level Overview](#highlevel-overview)
+3. [Threads](#threads)
+4. [Core systems](#core-systems)
 	1. [Engine](#engine)
 	2. [PhysicsEngine](#physicsengine)
 	3. [GraphicsEngine](#graphicsengine)
