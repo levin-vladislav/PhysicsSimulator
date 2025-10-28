@@ -1,18 +1,18 @@
 # Architecture
 This file describesw the project's architecture and the contents of each component.
 ## List of contents
-1. [Libraries](#libraries)
-2. [High-level Overview](#highlevel-overview)
-3. [Threads](#threads)
-4. [Core systems](#core-systems)
+1. [Libraries](#1-libraries)
+2. [High-level Overview](#2-high-level-overview)
+3. [Threads](#3-threads)
+4. [Core systems](#4-core-systems)
 	1. [Engine](#engine)
 	2. [PhysicsEngine](#physicsengine)
 	3. [GraphicsEngine](#graphicsengine)
 	4. [Dispatcher](#dispatcher)
 	5. [Interpreter](#interpreter)
 	2. [Logger](#logger)
-5. [Data flow](#data-flow)
-6. [Planned extensions](#planned-extensions)
+5. [Data flow](#5-data-flow)
+6. [Planned extensions](#6-planned-extensions)
 ## 1. Libraries
 For graphics, the project uses **OpenGL**, along with **GLFW** (for window and context creation), **GLEW** (for handling OpenGL extensions), and **GLM** (for mathematics). I also use **GLM** math  for physics calculations because it's convinient.
 ## 2. High-level Overview
