@@ -14,19 +14,33 @@
 #include <queue>
 #include <functional>
 #include <condition_variable>
+#include <typeinfo>
+#include <type_traits>
 
+enum class MessageType {
+	RAW, 
+	INFO, 
+	WARN,
+	ERROR
+};
 
-
+class Message {
+public:
+	Message(std::string text, MessageType type, std::string name, bool show = true);
+	std::string text;
+	MessageType type;
+	std::string name;
+	bool show;
+};
 
 class Logger
 {
-	// Object that safely logs to console
-
+	// Object that safely logs information to console
 
 	// static variables to manage all of the loggers
-	// Each og the different loggers use one thread
+	// Each of the different loggers use one thread
 	static std::thread logger_thread;
-	static std::queue<std::string> log_queue;
+	static std::queue<Message> log_queue;
 	static std::mutex log_mutex;
 	static std::condition_variable log_cv;
 	static std::atomic<bool> running;
@@ -35,10 +49,10 @@ public:
 	Logger(std::string name);
 
 	// Methods to output data
-	void info(std::string text);    //  [<current_time>][<name>/INFO] <text> 
-	void warn(std::string text);    //  [<current_time>][<name>/WARN] <text> (color - yellow)
-	void error(std::string text);   //  [<current_time>][<name>/INFO] <text> (color - red)
-	void raw(std::string message);  //  <text>
+	void info(std::string text, bool show = true);    //  [<current_time>][<name>/INFO] <text> 
+	void warn(std::string text, bool show = true);    //  [<current_time>][<name>/WARN] <text> (color - yellow)
+	void error(std::string text, bool show = true);   //  [<current_time>][<name>/INFO] <text> (color - red)
+	void raw(std::string message, bool show = true);  //  <text>
 
 
     // Static methods to manage all loggers at once
@@ -48,11 +62,14 @@ public:
 	
 private:
 	
-	// 
 	std::string name;
-	std::string get_time();
+	static std::string get_time(); // i gotta remove it 
 
-	void log(std::string text, std::string type);
+	void log(std::string text, MessageType type, std::string name, bool show);
 };
+
+
+
+
 
 

@@ -18,13 +18,22 @@ int main()
     Engine engine = Engine();
     Dispatcher dispatcher = Dispatcher(&engine, &shutdown);
     
-    engine.start();
-    dispatcher.start();
     
 
     // Main loop
-    while (!shutdown.load()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    try
+    {
+        while (!shutdown.load()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+    }
+    catch (const char* e)
+    {
+        logger.info("Unexpected error occured: ");
+        logger.error(e);
+        engine.stop();
+        dispatcher.stop();
+        return -1;
     }
 
     engine.stop();

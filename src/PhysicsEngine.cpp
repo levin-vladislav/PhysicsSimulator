@@ -7,28 +7,31 @@ float PhysicsEngine::linearDamping = 1.0;
 float PhysicsEngine::angularDamping = 1.0;
 float PhysicsEngine::g = 9.8f;
 
-PhysicsEngine::PhysicsEngine() : running(true), logger(Logger("PhysicsEngine"))
+PhysicsEngine::PhysicsEngine() : running(true), can_update(true), logger(Logger("PhysicsEngine"))
 {
 	logger.info("Initialized.");
 }
 
-bool PhysicsEngine::is_running() const
+bool PhysicsEngine::is_running()
 {
 	return running.load();
 }
 
 void PhysicsEngine::update(float dt)
 {
-
-	for (auto& body : bodies)
+	if (can_update.load())
 	{
-		if (!body) continue;
-		body->update(dt);
-		if (RigidBody* rigid = dynamic_cast<RigidBody*>(body.get()))
+		for (auto& body : bodies)
 		{
-			rigid->applyForce(glm::vec2(0.0f, -rigid->mass * g));
+			if (!body.get()) continue;
+
+			body->update(dt);
+			if (RigidBody* rigid = dynamic_cast<RigidBody*>(body.get()))
+			{
+				rigid->applyForce(glm::vec2(0.0f, -rigid->mass * g));
+			}
+
 		}
-		
 	}
 }
 
@@ -61,14 +64,16 @@ void PhysicsEngine::remove_body(int id)
 
 void PhysicsEngine::create_body(CreateBodyRequest request)
 {
+	can_update.store(false);
 	// Creates body with data got from CreateBodyRequest
 	auto body = std::make_unique<RigidBody>(request.type);
 	body->setPos(request.pos);
 	body->setVelocity(request.velocity);
 	body->mass = request.mass;
-	add_body(std::move(body));
-	logger.info(std::format("pos [{}, {}]; velocity [{}, {}]", request.pos.x, request.pos.y,
+	int id = add_body(std::move(body));
+	logger.info(std::format("id {} pos [{}, {}]; velocity [{}, {}]", id, request.pos.x, request.pos.y,
 		request.velocity.x, request.velocity.y));
+	can_update.store(true);
 }
 
 void PhysicsEngine::log_body(int id)

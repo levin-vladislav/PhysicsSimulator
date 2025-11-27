@@ -78,7 +78,7 @@ class PhysicsEngine
 public:
 	PhysicsEngine();
 	void update(float dt);
-	bool is_running() const;
+	bool is_running();
 
 	void log_body(int id);
 	void log_bodies();
@@ -98,6 +98,7 @@ private:
 	std::unordered_map<int, size_t> id2index; // Map of bodies' ids to index in 'bodies' vector
 	Logger logger;
 	std::atomic<bool> running;
+	std::atomic<bool> can_update;
 
 	int next_id = 0; // Stores id of last body added
 };

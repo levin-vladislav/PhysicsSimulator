@@ -2,12 +2,21 @@
 
 namespace fs = std::filesystem;
 
+
 // Declaring static variables
 std::thread Logger::logger_thread;
-std::queue<std::string> Logger::log_queue;
+std::queue<Message> Logger::log_queue;
 std::mutex Logger::log_mutex;
 std::condition_variable Logger::log_cv;
 std::atomic<bool> Logger::running = true;
+
+std::unordered_map<MessageType, std::string> MessageTypeToStr =
+{
+    {MessageType::RAW, "RAW"},
+    {MessageType::INFO, "INFO" },
+    {MessageType::WARN, "WARN" },
+    {MessageType::ERROR, "ERROR"}
+};
 
 Logger::Logger(std::string name) : name(name) {}
 
@@ -16,7 +25,7 @@ std::string generateLogFileName() {
     // Function generating log file name in format:
     // YY-MM-DD-N.txt      N - number of logs this day
 
-
+    // Move this function to utils.cpp - std::string get_date()
     // get date
     std::time_t now = std::time(nullptr);
     std::tm tm{};
@@ -49,26 +58,27 @@ std::string generateLogFileName() {
     return prefix + "-" + std::to_string(nextIndex) + ".txt";
 }
  
-void Logger::info(std::string text)
+void Logger::info(std::string text, bool show)
 {   
-    log(text, "INFO");
+    log(text, MessageType::INFO, name, show);
 }
 
-void Logger::warn(std::string text)
+void Logger::warn(std::string text, bool show)
 {
-    log(text, "WARN");
+    log(text, MessageType::WARN, name, show);
 }
 
-void Logger::error(std::string text)
+void Logger::error(std::string text, bool show)
 {
-    log(text, "ERROR");
+    log(text, MessageType::ERROR, name, show);
 }
 
-void Logger::raw(std::string text)
+void Logger::raw(std::string text, bool show)
 {
-    log(text, "RAW");
+    log(text, MessageType::RAW, name, show);
 }
 
+// Move this function to utils.cpp
 std::string Logger::get_time()
 {
     // Don't forget to add check of OS!
@@ -81,31 +91,18 @@ std::string Logger::get_time()
     return oss.str();
 }
 
-void Logger::log(std::string text, std::string type)
+void Logger::log(std::string text, MessageType type, std::string name, bool show)
 {
     std::lock_guard<std::mutex> lock(log_mutex);
     std::string message;
     
-    if (type == "RAW")
-    {
-        message = text;
-    }
-    else
-    {
-        if (type == "ERROR")
-        {
-            message = "\033[31m";
-        }
-
-        else if (type == "WARN")
-        {
-            message = "\033[33m";
-        }
-        else if (type != "INFO") return;
-        message += std::format("[{0}] [{1}/{2}]: {3}", get_time(), name, type, text);
-    }
     
-    log_queue.push(message);
+    //message += std::format("[{0}] [{1}/{2}]: {3}", get_time(), name, "", text);
+
+    
+    Message msg = Message(text, type, name, show);
+    
+    log_queue.push(msg);
     log_cv.notify_one();
 }
 
@@ -128,15 +125,38 @@ void Logger::start_logging()
 
                 while (!log_queue.empty())
                 {
-                    std::string msg = log_queue.front();
+                    Message msg = log_queue.front();
                     log_queue.pop();
                     lock.unlock();
 
-                    latest << msg << '\n';
-                    dated << msg << '\n';
+                    std::string msg_formatted = std::format("[{0}] [{1}/{2}]: {3}", get_time(), msg.name, MessageTypeToStr[msg.type], msg.text);
 
-                    std::cout << "\33[2K\r" << msg << "\033[0m" << std::endl;
+                    if (msg.show)
+                    {
+                        std::cout << "\33[2K\r";
+                        if (msg.type == MessageType::RAW)
+                        {
+                            std::cout << msg.text;
+                        }
+                        else if (msg.type == MessageType::INFO)
+                        {
+                            std::cout << msg_formatted;
+                        }
+                        else if (msg.type == MessageType::WARN)
+                        {
+                            std::cout << "\033[33m" << msg_formatted;
+                        }
+                        else if (msg.type == MessageType::ERROR)
+                        {
+                            std::cout << "\033[31m" << msg_formatted;
+                        }
+                        std::cout << "\033[0m" << std::endl;
+                    }
 
+                    latest << msg_formatted << '\n' << std::flush;
+                    dated << msg_formatted << '\n' << std::flush;
+
+                   
                     std::cout << ">>> " << std::flush;
 
                     lock.lock();
@@ -158,5 +178,9 @@ void Logger::stop()
         logger_thread.join();
     }
 }
+
+Message::Message(std::string text, MessageType type, std::string name, bool show) : text(text), type(type), show(show), name(name) {}
+
+
 
 

@@ -4,6 +4,7 @@
 Engine::Engine() : running(false), logger(Logger("Engine"))
 {
 	logger.info("Initialized.");
+	this->start();
 }
 
 bool Engine::is_running() const
@@ -37,14 +38,31 @@ void Engine::main_loop()
 
 	auto last_time = clock::now();
 
-	while (running.load())
+	while (running.load() )
 	{
 		auto now = clock::now();
 		std::chrono::duration<float> delta = now - last_time;
 		float dt = delta.count();
 		last_time = now;
+		if (dt > 0.5)
+		{
+			dt = 0.5;
+		}
+		else if (dt < 0.02)
+		{
+			dt = 0.02;
+		}
 
-		update(dt);
+		try
+		{
+			update(dt);
+		}
+		catch (char* e)
+		{
+			logger.error("Unexpected error occured:");
+			logger.error(e);
+		}
+			
 		// Runs update function with dt equal to time difference between ticks
 
 	}

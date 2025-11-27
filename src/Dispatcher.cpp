@@ -10,6 +10,7 @@ Dispatcher::Dispatcher(Engine* engine, std::atomic<bool>* shutdown) :
 {
 	interpreter.engine_ptr = engine;
 	logger.info("Initialized.");
+	this->start();
 }
 
 bool Dispatcher::is_running() const
