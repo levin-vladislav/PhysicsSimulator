@@ -28,6 +28,11 @@ And this will print to console the following:
 Also you can use three more formatting types.
 `warn` will make the message text yellow, and `error` will turn it red.
 If you don't want to format your text at all, without module name, current time etc - you can use `raw`.
+Raw messages are printed without formatting only to console, but they are printed to log files in the following format:
+
+	[HH:MM:SS] [ModuleName/RAW]: <text>
+
+Each of these functions also accepts argument `show`. It is a bool value, default is true. When true it is printed to both console and log files, otherwise - log files only. 
 
 Also there is one more non-static method, but it's not public - `log`. 
 Basically all the previous methods just runs this method with different arguments.

@@ -90,7 +90,7 @@ The `Logger` class is created in each module. It has a name of the module and ha
 - error
 - raw
 
-After calling one of these functions, the message is added to the logging queue. Messages are printed to the console and written both to `latest_log.txt` and to a dated log file.
+After calling one of these functions, the message is added to the logging queue. Defaultly messages are printed to the console and written both to `latest_log.txt` and to a dated log file, but you can make messages not to show in the console.
 More about logger you can read [here](logger.md).
 ## 5. Data flow
 After getting input from user by `Dispatcher`, it is sent to `Interpreter`, than `Interpreter` executes the command and sends a request to `Engine` if necessearly.
