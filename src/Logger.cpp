@@ -151,13 +151,14 @@ void Logger::start_logging()
                             std::cout << "\033[31m" << msg_formatted;
                         }
                         std::cout << "\033[0m" << std::endl;
+                        std::cout << ">>> " << std::flush;
                     }
 
                     latest << msg_formatted << '\n' << std::flush;
                     dated << msg_formatted << '\n' << std::flush;
 
                    
-                    std::cout << ">>> " << std::flush;
+                    
 
                     lock.lock();
 

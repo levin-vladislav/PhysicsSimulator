@@ -11,6 +11,11 @@ struct CreateBodyRequest
 	BodyType type;
 };
 
+struct CreateRenderObjectRequest
+{
+
+};
+
 
 
 

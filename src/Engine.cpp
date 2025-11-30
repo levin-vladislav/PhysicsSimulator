@@ -34,6 +34,8 @@ void Engine::stop()
 
 void Engine::main_loop()
 {
+	graphicsEngine.init_window();
+
 	using clock = std::chrono::high_resolution_clock;
 
 	auto last_time = clock::now();
@@ -64,8 +66,11 @@ void Engine::main_loop()
 		}
 			
 		// Runs update function with dt equal to time difference between ticks
-
 	}
+
+	graphicsEngine.stop();
+	physicsEngine.stop();
+
 }
 
 void Engine::request(CreateBodyRequest request)

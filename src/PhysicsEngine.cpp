@@ -159,3 +159,8 @@ void RigidBody::update(float dt)
 
 }
 
+void PhysicsEngine::stop()
+{
+	running.store(false);
+}
+

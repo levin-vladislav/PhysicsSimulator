@@ -13,6 +13,9 @@ That's all!
 
 ## TODO
 - GRAPHICS ENGINE
+- *General structure*
+- *Adding window to the screen*
+- ***Rendering objects***
 - ~~**FIX THE CRASH WHEN MORE THAN TWO BODIES ADDED**~~ - 20.11.25 I FREAKING FINALLY DONE IT OMG
 - ~~**ADD A LOG INTO FILE FUNCTION**~~ - 27.11.25
 - ~~**LOG SHOULD BE SAVED EVEN WHEN PROGRAM STOPPED WITH CRASH**~~ - 27.11.25

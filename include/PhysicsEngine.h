@@ -2,7 +2,6 @@
 #include "Logger.h"
 #include <atomic>
 #include <algorithm>
-#include <glm/vec2.hpp>
 #include "utils.h"
 #include <string>
 #include <vector>
@@ -92,6 +91,8 @@ public:
 	static float angularDamping;
 
 	static float g;
+
+	void stop();
 
 private:
 	std::vector<std::unique_ptr<Body>> bodies; // Vector of pointers to bodies
