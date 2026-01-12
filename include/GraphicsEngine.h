@@ -7,7 +7,22 @@
 
 class RenderObject
 {
+public:
+	int id;
+	glm::vec2 pos;
+	glm::vec2 size;
+	void update();
+	glm::mat2 translation;
+	glm::mat2 rotation;
+	glm::mat2 scale;
+	glm::mat2 view_projection;
 
+private:
+	GLuint VAO;
+	GLuint VBO;
+	GLuint shaderProgram;
+	GLuint FBO;
+	GLuint texture;
 };
 
 class GraphicsEngine
@@ -20,9 +35,6 @@ public:
 	void remove_object(int id);
 	RenderObject create_object(CreateRenderObjectRequest request);
 	void stop();
-	GLuint VertexArrayID;
-	GLuint VBO;
-	GLuint shaderProgram;
 	void init_window();
 	
 private:
@@ -30,8 +42,11 @@ private:
 	Logger logger;
 	std::vector<RenderObject> objects;
 	std::unordered_map<int, size_t> id2index;
+	int next_id = 0;
 
 
+	glm::vec2 camera_pos;
+	float zoom;
 	int window_width;
 	int window_height;
 	bool fullscreen;

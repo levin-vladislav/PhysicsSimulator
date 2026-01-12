@@ -1,5 +1,7 @@
 #pragma once
 #include <glm/vec2.hpp>
+#include <glm/mat2x2.hpp>
+#include <unordered_map>
 
 enum class BodyType { STATIC, DYNAMIC, KINEMATIC };
 

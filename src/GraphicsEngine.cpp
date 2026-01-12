@@ -130,5 +130,12 @@ void GraphicsEngine::stop()
 	running.store(false);
 }
 
+int GraphicsEngine::add_object(RenderObject object)
+{
+    int id = next_id++;
+    id2index[id] = objects.size();
+    object.id = id;
+}
+
 
 
