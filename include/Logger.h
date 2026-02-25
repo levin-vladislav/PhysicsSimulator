@@ -11,11 +11,11 @@
 #include <string>
 #include <atomic>
 #include <iomanip>
-#include <queue>
 #include <functional>
 #include <condition_variable>
 #include <typeinfo>
 #include <type_traits>
+#include "utils.h"
 
 enum class MessageType {
 	RAW, 
@@ -63,13 +63,7 @@ public:
 private:
 	
 	std::string name;
-	static std::string get_time(); // i gotta remove it 
 
 	void log(std::string text, MessageType type, std::string name, bool show);
 };
-
-
-
-
-
 

@@ -27,12 +27,7 @@ std::string generateLogFileName() {
 
     // Move this function to utils.cpp - std::string get_date()
     // get date
-    std::time_t now = std::time(nullptr);
-    std::tm tm{};
-    localtime_s(&tm, &now);
-    std::ostringstream date;
-    date << std::put_time(&tm, "%Y-%m-%d");
-    std::string prefix = date.str();
+    std::string prefix = get_date();
 
     int maxIndex = 0;
 
@@ -63,6 +58,7 @@ void Logger::info(std::string text, bool show)
     log(text, MessageType::INFO, name, show);
 }
 
+
 void Logger::warn(std::string text, bool show)
 {
     log(text, MessageType::WARN, name, show);
@@ -76,19 +72,6 @@ void Logger::error(std::string text, bool show)
 void Logger::raw(std::string text, bool show)
 {
     log(text, MessageType::RAW, name, show);
-}
-
-// Move this function to utils.cpp
-std::string Logger::get_time()
-{
-    // Don't forget to add check of OS!
-    std::time_t now = std::time(nullptr);
-    std::tm tm_safe;
-    localtime_s(&tm_safe, &now);
-
-    std::ostringstream oss;
-    oss << std::put_time(&tm_safe, "%H:%M:%S");
-    return oss.str();
 }
 
 void Logger::log(std::string text, MessageType type, std::string name, bool show)
@@ -105,7 +88,6 @@ void Logger::log(std::string text, MessageType type, std::string name, bool show
     log_queue.push(msg);
     log_cv.notify_one();
 }
-
 
 void Logger::start_logging()
 {
@@ -169,7 +151,6 @@ void Logger::start_logging()
     );
 }
 
-
 void Logger::stop()
 {
     running.store(false);
@@ -180,8 +161,9 @@ void Logger::stop()
     }
 }
 
-Message::Message(std::string text, MessageType type, std::string name, bool show) : text(text), type(type), show(show), name(name) {}
 
+Message::Message(std::string text, MessageType type, std::string name, bool show) : 
+    text(text), type(type), show(show), name(name) {}
 
 
 

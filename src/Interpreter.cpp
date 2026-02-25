@@ -39,13 +39,8 @@ void Interpreter::init_commands()
     time.add_description("time - returns exact time");
     time.set_callback([this](std::string args)
         {
-            std::time_t now = std::time(nullptr);
-            std::tm tm_safe;
-            localtime_s(&tm_safe, &now);
-
-            std::ostringstream oss;
-            oss << std::put_time(&tm_safe, "%H:%M:%S");
-            logger.raw("Current time: " + oss.str());
+            
+            logger.raw("Current time: " + get_time());
 
         });
     add_command(time);
@@ -136,6 +131,16 @@ void Interpreter::init_commands()
                                                        glm::vec2(0.0f, 0.0f),
                                                        m,
                                                        BodyType::KINEMATIC});
+                engine_ptr->request(CreateRenderObjectRequest
+                    {
+                    glm::vec2(x, y),
+                    std::vector<float> {-0.3f, -0.3f, 
+                                        0.3f, -0.3f,
+                                         0.3f, 0.3f, 
+                                         -0.3f, 0.3f},
+                    "shaders\\body.vx",
+                    "shaders\\body.fg"
+                    });
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");

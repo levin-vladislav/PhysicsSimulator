@@ -8,14 +8,17 @@
 class RenderObject
 {
 public:
+	RenderObject(int id, glm::vec2 pos, std::vector<float> vertices,
+		const char* vxShaders, const char* fgShaders, GLFWwindow* window);
 	int id;
 	glm::vec2 pos;
 	glm::vec2 size;
 	void update();
-	glm::mat2 translation;
-	glm::mat2 rotation;
-	glm::mat2 scale;
+	glm::vec2 translation;
+	float rotation;
+	float scale;
 	glm::mat2 view_projection;
+	std::vector<float> vertices;
 
 private:
 	GLuint VAO;
@@ -23,6 +26,7 @@ private:
 	GLuint shaderProgram;
 	GLuint FBO;
 	GLuint texture;
+	GLFWwindow* window;
 };
 
 class GraphicsEngine
@@ -36,7 +40,8 @@ public:
 	RenderObject create_object(CreateRenderObjectRequest request);
 	void stop();
 	void init_window();
-	
+	std::queue<CreateRenderObjectRequest> objectQueue;
+
 private:
 	std::atomic<bool> running;
 	Logger logger;
@@ -44,14 +49,20 @@ private:
 	std::unordered_map<int, size_t> id2index;
 	int next_id = 0;
 
-
+	std::atomic<bool> can_update = true;
 	glm::vec2 camera_pos;
 	float zoom;
 	int window_width;
 	int window_height;
 	bool fullscreen;
 	float aspect;
-	GLFWwindow *window;
 	
+	GLFWwindow *window;
+	GLuint tVAO;
+	GLuint tVBO;
+	GLuint shaderProgram;
 
 };
+
+GLuint compileShader(GLenum type, const char* source);
+GLuint createProgram(const char* vertexPath, const char* fragmentPath);

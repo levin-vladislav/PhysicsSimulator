@@ -70,7 +70,6 @@ void Engine::main_loop()
 
 	graphicsEngine.stop();
 	physicsEngine.stop();
-
 }
 
 void Engine::request(CreateBodyRequest request)
@@ -78,5 +77,12 @@ void Engine::request(CreateBodyRequest request)
 	// Manages requesting. Later could be request via JSON
 	physicsEngine.create_body(request);
 }
+
+void Engine::request(CreateRenderObjectRequest request)
+{
+	graphicsEngine.objectQueue.push(request);
+}
+
+
 
 
