@@ -21,8 +21,8 @@ public:
 
 	bool is_running() const;
 
-	void request(CreateBodyRequest request); // Method for proper Dispatcher <=> Body interaction
-	void request(CreateRenderObjectRequest request);
+	void request(CreateBodyRequest physics_request,
+		CreateRenderObjectRequest graphics_request); // Method for proper Dispatcher <=> Body interaction
 
 	PhysicsEngine physicsEngine; // Manages physics in the project
 	GraphicsEngine graphicsEngine; // Manages graphics in the project

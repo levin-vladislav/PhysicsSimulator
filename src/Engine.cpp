@@ -35,12 +35,14 @@ void Engine::stop()
 void Engine::main_loop()
 {
 	graphicsEngine.init_window();
+	graphicsEngine.init_shaders();
+	std::cout << "mainloop thread: " << std::this_thread::get_id() << std::endl;
 
 	using clock = std::chrono::high_resolution_clock;
 
 	auto last_time = clock::now();
 
-	while (running.load() )
+	while (running.load())
 	{
 		auto now = clock::now();
 		std::chrono::duration<float> delta = now - last_time;
@@ -72,16 +74,15 @@ void Engine::main_loop()
 	physicsEngine.stop();
 }
 
-void Engine::request(CreateBodyRequest request)
+void Engine::request(CreateBodyRequest physics_request,
+					 CreateRenderObjectRequest graphics_request)
 {
 	// Manages requesting. Later could be request via JSON
-	physicsEngine.create_body(request);
+	int id = physicsEngine.create_body(physics_request);
+	graphics_request.id = id;
+	graphicsEngine.objectQueue.push(graphics_request);
 }
 
-void Engine::request(CreateRenderObjectRequest request)
-{
-	graphicsEngine.objectQueue.push(request);
-}
 
 
 

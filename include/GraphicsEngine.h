@@ -9,7 +9,7 @@ class RenderObject
 {
 public:
 	RenderObject(int id, glm::vec2 pos, std::vector<float> vertices,
-		const char* vxShaders, const char* fgShaders, GLFWwindow* window);
+		GLuint shaderProgram, GLuint modelLoc, GLFWwindow* window);
 	int id;
 	glm::vec2 pos;
 	glm::vec2 size;
@@ -17,7 +17,6 @@ public:
 	glm::vec2 translation;
 	float rotation;
 	float scale;
-	glm::mat2 view_projection;
 	std::vector<float> vertices;
 
 private:
@@ -27,6 +26,7 @@ private:
 	GLuint FBO;
 	GLuint texture;
 	GLFWwindow* window;
+	GLuint modelLoc;
 };
 
 class GraphicsEngine
@@ -40,6 +40,11 @@ public:
 	RenderObject create_object(CreateRenderObjectRequest request);
 	void stop();
 	void init_window();
+	void init_shaders();
+	void moveCamera(glm::vec2 step);
+	void setCameraPos(glm::vec2 pos);
+	void setZoom(float zoom);
+	void Zoom(float zoom);
 	std::queue<CreateRenderObjectRequest> objectQueue;
 
 private:
@@ -56,11 +61,12 @@ private:
 	int window_height;
 	bool fullscreen;
 	float aspect;
+	glm::mat4 view = glm::mat4(1.0f);
 	
-	GLFWwindow *window;
-	GLuint tVAO;
-	GLuint tVBO;
-	GLuint shaderProgram;
+	GLFWwindow* window;
+	GLuint bodyShaderProgram;
+	GLuint viewLoc;
+	GLuint modelLoc;
 
 };
 

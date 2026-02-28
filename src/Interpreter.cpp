@@ -130,16 +130,14 @@ void Interpreter::init_commands()
                 engine_ptr->request(CreateBodyRequest{ glm::vec2(x, y), 
                                                        glm::vec2(0.0f, 0.0f),
                                                        m,
-                                                       BodyType::KINEMATIC});
-                engine_ptr->request(CreateRenderObjectRequest
+                                                       BodyType::KINEMATIC},
+                    CreateRenderObjectRequest
                     {
                     glm::vec2(x, y),
                     std::vector<float> {-0.3f, -0.3f, 
                                         0.3f, -0.3f,
                                          0.3f, 0.3f, 
                                          -0.3f, 0.3f},
-                    "shaders\\body.vx",
-                    "shaders\\body.fg"
                     });
             }
             catch (const std::invalid_argument& e) {
@@ -152,6 +150,141 @@ void Interpreter::init_commands()
         });
     add_command(create);
 
+    Command setCameraPos = Command("setCameraPos");
+    setCameraPos.add_description("setCameraPos [x] [y] - sets camera pos to given coordinates");
+    setCameraPos.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string x_string;
+            std::string y_string;
+
+            if (!(iss >> x_string >> y_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                float x = std::stof(x_string);
+                float y = std::stof(y_string);
+                this->engine_ptr->graphicsEngine.setCameraPos(glm::vec2(x, y));
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setCameraPos);
+
+    Command moveCamera = Command("moveCamera");
+    moveCamera.add_description("moveCamera [x] [y] - moves camera on the given step");
+    moveCamera.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string x_string;
+            std::string y_string;
+
+            if (!(iss >> x_string >> y_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                float x = std::stof(x_string);
+                float y = std::stof(y_string);
+                this->engine_ptr->graphicsEngine.moveCamera(glm::vec2(x, y));
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(moveCamera);
+
+    Command setZoom = Command("setZoom");
+    setZoom.add_description("setZoom [zoom] - sets zoom");
+    setZoom.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string z_string;
+
+            if (!(iss >> z_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                float z = std::stof(z_string);
+                this->engine_ptr->graphicsEngine.setZoom(z);
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setZoom);
+
+    Command Zoom = Command("zoom");
+    Zoom.add_description("zoom [zoom] - multiplies current zoom on giving value");
+    Zoom.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string z_string;
+
+            if (!(iss >> z_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                float z = std::stof(z_string);
+                this->engine_ptr->graphicsEngine.Zoom(z);
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(Zoom);
 
     // help - show that list
     Command help = Command("help");

@@ -1,6 +1,10 @@
 #pragma once
 #include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/glm.hpp>
 #include <glm/mat2x2.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <unordered_map>
 #include <string>
 #include <filesystem>
@@ -26,8 +30,7 @@ struct CreateRenderObjectRequest
 {
 	glm::vec2 pos;
 	std::vector<float> vertices;
-	const char* vertexShaderPath;
-	const char* fragmentShaderPath;
+	int id = 0;
 };
 
 std::string get_date();

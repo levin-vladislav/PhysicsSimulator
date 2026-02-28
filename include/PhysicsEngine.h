@@ -82,7 +82,7 @@ public:
 	void log_body(int id);
 	void log_bodies();
 
-	void create_body(CreateBodyRequest request); // Function that accept a request of creating a body
+	int create_body(CreateBodyRequest request); // Function that accept a request of creating a body
 	int add_body(std::unique_ptr<Body> body);
 	Body* get_body(int id);
 	void remove_body(int id);

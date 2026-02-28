@@ -19,28 +19,24 @@ bool GraphicsEngine::is_running() const
 	return running.load();
 }
 
-RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices, const char* vxShader, const char* fgShader, GLFWwindow* window)
+RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices, 
+    GLuint shaderProgram, GLuint modelLoc, GLFWwindow* window)
 {
     this->vertices = vertices;
     this->window = window;
-    std::cout << "RENDEROBJECT THREAD: "
-        << std::this_thread::get_id() << std::endl;
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    std::cout << "2. Window: " << window << std::endl;
-    glfwMakeContextCurrent(window);
-    std::cout << "3. Current Context: " << glfwGetCurrentContext() << std::endl;
-    if (!glfwGetCurrentContext()) std::cerr << "render object created without context" << std::endl;
-    std::cout << "vx" << vxShader << std::endl;
-    std::cout << "fg" << fgShader << std::endl;
-    shaderProgram = createProgram(vxShader, fgShader);
-    
+    this->pos = pos;
+    this->shaderProgram = shaderProgram;
+    this->modelLoc = modelLoc;
     this->id = id;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    std::cout << "Vertices: ";
+    for (float element : vertices) { // or auto element
+        std::cout << element << " ";
+    }
+    std::cout << std::endl; // Print a newline at the end
     //glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
     
     //glVertexAttribPointer(0, 2, 
@@ -48,53 +44,65 @@ RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices, c
     //                    2 * sizeof(float), (void*)0);
     
     glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), vertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    glBindVertexArray(0);
-    glfwMakeContextCurrent(0);
 
 }
 
 RenderObject GraphicsEngine::create_object(CreateRenderObjectRequest request)
 {
     std::cout << "1. Current Context: " << window << std::endl;
-    return RenderObject(next_id++, 
+    std::cout << "Shader: " << bodyShaderProgram << std::endl;
+
+    return RenderObject(request.id,
         request.pos, request.vertices,
-        request.vertexShaderPath, request.fragmentShaderPath,
+        bodyShaderProgram,
+        modelLoc,
         window);
 }
 
 void RenderObject::update()
 {   
-    glUseProgram(shaderProgram);
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(pos, 0.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, vertices.size());
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void GraphicsEngine::update(float dt)
 {
+    glfwMakeContextCurrent(window);
+    glUseProgram(bodyShaderProgram);
     while (!objectQueue.empty())
     {
         add_object(create_object(objectQueue.front()));
         objectQueue.pop();
 
     }
-
-    glfwMakeContextCurrent(window);
+       
     if (!running.load()) return;
 
     if (glfwWindowShouldClose(window)) {
         stop();
         return;
     }
-    
+
+    glfwGetWindowSize(window, &window_width, &window_height);
+    aspect = (float)window_width / (float)window_height;
+    glViewport(0, 0, window_width, window_height);
+    view = glm::translate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), glm::vec3(-camera_pos, 0.0f));
+    view = glm::scale(view, glm::vec3(zoom, zoom, 1.0f));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (can_update.load())
     {
+        glUseProgram(bodyShaderProgram);
         for (RenderObject& obj : objects)
             {
                 obj.update();
@@ -105,6 +113,26 @@ void GraphicsEngine::update(float dt)
     glfwSwapBuffers(window);
     glfwPollEvents();
     glfwMakeContextCurrent(0);
+}
+
+void GraphicsEngine::setCameraPos(glm::vec2 pos)
+{
+    camera_pos = pos;
+}
+
+void GraphicsEngine::moveCamera(glm::vec2 step)
+{
+    camera_pos = camera_pos + step;
+}
+
+void GraphicsEngine::setZoom(float zoom)
+{
+    this->zoom = zoom;
+}
+
+void GraphicsEngine::Zoom(float zoom)
+{
+    this->zoom *= zoom;
 }
 
 void GraphicsEngine::init_window()
@@ -126,17 +154,54 @@ void GraphicsEngine::init_window()
 
     glfwMakeContextCurrent(window);
 
+    std::cout << "Window: " << window << std::endl;
+
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         logger.error("Failed to initialize GLEW!");
         return;
     }
 
+    glfwGetWindowSize(window, &window_width, &window_height);
+    aspect = (float)window_width / (float)window_height;
     glViewport(0, 0, window_width, window_height);
+    view = glm::ortho(-aspect, aspect, -1.0f, 1.0f) * view;
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glfwMakeContextCurrent(0);
     
 }
+
+void printProgramInfoLog(GLuint program) {
+    int max_length = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
+
+    if (max_length > 0) {
+        std::vector<char> info_log(max_length);
+        int actual_length = 0;
+        glGetProgramInfoLog(program, max_length, &actual_length, info_log.data());
+        std::cout << "Program Info Log:" << std::endl << info_log.data() << std::endl;
+    }
+}
+
+void GraphicsEngine::init_shaders()
+{
+    bodyShaderProgram = createProgram("shaders\\body.vx", "shaders\\body.fg");
+    glValidateProgram(bodyShaderProgram);
+    //logger.info(std::format("viewLoc: {}", viewLoc));
+    logger.info(std::format("modelLoc: {}", modelLoc));
+    GLint params = -1;
+    glGetProgramiv(bodyShaderProgram, GL_VALIDATE_STATUS, &params);
+    if (GL_TRUE != params)
+    {
+        std::cerr << "Program validation failed!" << std::endl;
+        printProgramInfoLog(bodyShaderProgram);
+    }
+    viewLoc = glGetUniformLocation(bodyShaderProgram, "view");
+    modelLoc = glGetUniformLocation(bodyShaderProgram, "model");
+    
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+}
+
 void GraphicsEngine::stop()
 {
 	glfwTerminate();
@@ -146,9 +211,8 @@ void GraphicsEngine::stop()
 int GraphicsEngine::add_object(RenderObject object)
 {
     can_update.store(false);
-    int id = next_id++;
+    int id = object.id;
     id2index[id] = objects.size();
-    object.id = id;
     objects.push_back(object);
     logger.info(std::format("Object {} is rendered.", id));
     can_update.store(true);

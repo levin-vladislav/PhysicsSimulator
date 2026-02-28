@@ -62,7 +62,7 @@ void PhysicsEngine::remove_body(int id)
 	id2index.erase(id);
 }
 
-void PhysicsEngine::create_body(CreateBodyRequest request)
+int PhysicsEngine::create_body(CreateBodyRequest request)
 {
 	can_update.store(false);
 	// Creates body with data got from CreateBodyRequest
@@ -74,6 +74,7 @@ void PhysicsEngine::create_body(CreateBodyRequest request)
 	logger.info(std::format("id {} pos [{}, {}]; velocity [{}, {}]", id, request.pos.x, request.pos.y,
 		request.velocity.x, request.velocity.y));
 	can_update.store(true);
+	return id;
 }
 
 void PhysicsEngine::log_body(int id)
