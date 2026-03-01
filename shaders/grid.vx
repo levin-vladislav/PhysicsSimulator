@@ -1,0 +1,13 @@
+#version 330 core
+layout (location = 0) in vec2 aPos;
+uniform mat4 view;
+uniform mat4 model;
+
+out vec2 worldPos;
+
+void main()
+{
+	vec4 Pos = model * vec4(aPos, 0.0, 1.0);
+	worldPos = vec2(Pos.x, Pos.y);
+	gl_Position = view * Pos;
+}

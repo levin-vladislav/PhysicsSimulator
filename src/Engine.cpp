@@ -36,6 +36,7 @@ void Engine::main_loop()
 {
 	graphicsEngine.init_window();
 	graphicsEngine.init_shaders();
+	graphicsEngine.init_grid();
 	std::cout << "mainloop thread: " << std::this_thread::get_id() << std::endl;
 
 	using clock = std::chrono::high_resolution_clock;

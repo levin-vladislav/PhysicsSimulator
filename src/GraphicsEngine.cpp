@@ -75,6 +75,15 @@ void RenderObject::update()
 void GraphicsEngine::update(float dt)
 {
     glfwMakeContextCurrent(window);
+    glfwGetWindowSize(window, &window_width, &window_height);
+    aspect = (float)window_width / (float)window_height;
+    glViewport(0, 0, window_width, window_height);
+    
+    view = glm::translate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), glm::vec3(-camera_pos, 0.0f)*zoom);
+    view = glm::scale(view, glm::vec3(zoom, zoom, 1.0f));
+
+
+    
     glUseProgram(bodyShaderProgram);
     while (!objectQueue.empty())
     {
@@ -90,15 +99,21 @@ void GraphicsEngine::update(float dt)
         return;
     }
 
-    glfwGetWindowSize(window, &window_width, &window_height);
-    aspect = (float)window_width / (float)window_height;
-    glViewport(0, 0, window_width, window_height);
-    view = glm::translate(glm::ortho(-aspect, aspect, -1.0f, 1.0f), glm::vec3(-camera_pos, 0.0f));
-    view = glm::scale(view, glm::vec3(zoom, zoom, 1.0f));
+    
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(gridShaderProgram);
+    glUniformMatrix4fv(gridViewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniform1f(gridThicknessLoc, gridThickness);
+    glUniform1f(gridSizeLoc, gridSize);
+    glm::mat4 gridModel = glm::mat4(1.0f);
+    gridModel = glm::translate(gridModel, glm::vec3(round(camera_pos.x), round(camera_pos.y), 0.0f));
+    glUniformMatrix4fv(gridModelLoc, 1, GL_FALSE, glm::value_ptr(gridModel));
+    glBindVertexArray(gridVAO);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     if (can_update.load())
     {
@@ -135,6 +150,13 @@ void GraphicsEngine::Zoom(float zoom)
     this->zoom *= zoom;
 }
 
+void GraphicsEngine::setGrid(float gridSize, float gridThickness)
+{
+    this->gridSize = gridSize;
+    this->gridThickness = gridThickness;
+}
+
+
 void GraphicsEngine::init_window()
 {
     std::cout << "WINDOW THREAD: "
@@ -167,7 +189,9 @@ void GraphicsEngine::init_window()
     glViewport(0, 0, window_width, window_height);
     view = glm::ortho(-aspect, aspect, -1.0f, 1.0f) * view;
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+
 }
 
 void printProgramInfoLog(GLuint program) {
@@ -200,6 +224,26 @@ void GraphicsEngine::init_shaders()
     
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
+    gridShaderProgram = createProgram("shaders\\grid.vx", "shaders\\grid.fg");
+    gridViewLoc = glGetUniformLocation(gridShaderProgram, "view");
+    gridThicknessLoc = glGetUniformLocation(gridShaderProgram, "gridThickness");
+    gridSizeLoc = glGetUniformLocation(gridShaderProgram, "gridSize");
+    gridModelLoc = glGetUniformLocation(gridShaderProgram, "model");
+
+    
+    }
+
+void GraphicsEngine::init_grid()
+{
+    glfwMakeContextCurrent(window);
+    glGenVertexArrays(1, &gridVAO);
+    glGenBuffers(1, &gridVBO);
+    glBindVertexArray(gridVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    float vertices[] = { -20.0f, -20.0f, 20.0f, -20.0f, 20.0f, 20.0f, -20.0f, 20.0f };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 }
 
 void GraphicsEngine::stop()

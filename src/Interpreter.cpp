@@ -286,6 +286,41 @@ void Interpreter::init_commands()
         });
     add_command(Zoom);
 
+    Command setGrid = Command("setGrid");
+    setGrid.add_description("setGrid [size] [thickness] - sets grid");
+    setGrid.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string s_string;
+            std::string t_string;
+
+            if (!(iss >> s_string >> t_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                float s = std::stof(s_string);
+                float t = std::stof(t_string);
+                this->engine_ptr->graphicsEngine.setGrid(s, t);
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setGrid);
+
     // help - show that list
     Command help = Command("help");
     help.add_description("help - show that list");
@@ -369,3 +404,5 @@ std::string Command::get_description()
 {
     return description;
 }
+
+

@@ -1,0 +1,19 @@
+#version 330 core
+out vec4 FragColor;
+in vec2 worldPos;
+
+uniform float gridSize;
+uniform float gridThickness;
+
+void main()
+{
+	if ((abs(worldPos.x) < floor(abs(worldPos.x)/gridSize)*gridSize + gridThickness/2) || (abs(worldPos.x) > ceil(abs(worldPos.x)/gridSize)*gridSize - gridThickness/2) || (abs(worldPos.y) < floor(abs(worldPos.y)/gridSize)*gridSize + gridThickness/2) || (abs(worldPos.y) > ceil(abs(worldPos.y)/gridSize)*gridSize - gridThickness/2))
+	{
+		FragColor = vec4(0.3, 0.3, 0.3, 1.0);
+	}
+	else
+	{
+		FragColor = vec4(0.3, 0.3, 0.3, 0.0);
+	}
+	
+}
