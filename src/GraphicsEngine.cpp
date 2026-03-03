@@ -32,17 +32,7 @@ RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices,
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    std::cout << "Vertices: ";
-    for (float element : vertices) { // or auto element
-        std::cout << element << " ";
-    }
-    std::cout << std::endl; // Print a newline at the end
-    //glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-    
-    //glVertexAttribPointer(0, 2, 
-    //                      GL_FLOAT, GL_FALSE, 
-    //                    2 * sizeof(float), (void*)0);
-    
+        
     glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), vertices.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -53,8 +43,6 @@ RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices,
 
 RenderObject GraphicsEngine::create_object(CreateRenderObjectRequest request)
 {
-    std::cout << "1. Current Context: " << window << std::endl;
-    std::cout << "Shader: " << bodyShaderProgram << std::endl;
 
     return RenderObject(request.id,
         request.pos, request.vertices,
@@ -67,6 +55,7 @@ void RenderObject::update()
 {   
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(pos, 0.0f));
+    model = glm::rotate(model, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -159,8 +148,6 @@ void GraphicsEngine::setGrid(float gridSize, float gridThickness)
 
 void GraphicsEngine::init_window()
 {
-    std::cout << "WINDOW THREAD: "
-        << std::this_thread::get_id() << std::endl;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -176,7 +163,6 @@ void GraphicsEngine::init_window()
 
     glfwMakeContextCurrent(window);
 
-    std::cout << "Window: " << window << std::endl;
 
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
@@ -202,7 +188,7 @@ void printProgramInfoLog(GLuint program) {
         std::vector<char> info_log(max_length);
         int actual_length = 0;
         glGetProgramInfoLog(program, max_length, &actual_length, info_log.data());
-        std::cout << "Program Info Log:" << std::endl << info_log.data() << std::endl;
+        
     }
 }
 
@@ -284,9 +270,6 @@ GLuint createProgram(const char* vertexPath, const char* fragmentPath) {
     std::string fShaderStr = readFile(fragmentPath);
     const char* vShaderCode = vShaderStr.c_str();
     const char* fShaderCode = fShaderStr.c_str();
-
-    std::cout << vShaderCode << std::endl;
-    std::cout << fShaderCode << std::endl;
 
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vShaderCode);
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fShaderCode);

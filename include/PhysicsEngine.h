@@ -6,70 +6,9 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-
-class Body
-{
-	// Basic body object. Contains all primary methods and properties
-public:
-	int id;
-	float mass;
-
-	virtual void update(float dt) = 0;
-	virtual ~Body();
-
-	inline glm::vec2 getPos() const { return pos; }
-
-	inline glm::vec2 getVelocity() const { return velocity; }
-	inline glm::vec2 getAcceleration() const { return acceleration; };
-
-	inline void setPos(glm::vec2 pos) { this->pos = pos; }
-	inline void setVelocity(glm::vec2 velocity) { this->velocity = velocity; }
-	inline void setAcceleration(glm::vec2 acceleration) { this->acceleration = acceleration; }
-
-	inline void move(glm::vec2 translation) { this->pos += translation; }
-	inline void addVelocity(glm::vec2 velocity) { this->velocity += velocity; }
-	inline void addAcceleration(glm::vec2 acceleration) { this->acceleration += acceleration; }
-
-	std::string get_info();
+#include <box2d/box2d.h>
 
 
-protected:
-	glm::vec2 pos;
-	glm::vec2 velocity;
-	glm::vec2 acceleration;
-
-};
-
-class RigidBody : public Body
-{
-	// A sub-class for rigid bodies. 
-public:
-	RigidBody(BodyType type);
-
-	void update(float dt) override;
-
-	// Transform
-	float angle, angularVelocity, angularAcceleration;
-
-	// Mass
-	float invMass, inertia, invInertia;
-
-	// Forces
-	glm::vec2 forceAccumulator;
-	float torqueAccumulator;
-	
-	// Collision
-	glm::vec2 impulseAccumulator;
-
-
-	bool isTrigger;
-	BodyType type;
-
-		
-	inline void applyForce(glm::vec2 force) { forceAccumulator += force; }
-	inline void applyImpulse(glm::vec2 impulse) { impulseAccumulator += impulse; }
-
-};
 
 class PhysicsEngine
 {
@@ -79,28 +18,82 @@ public:
 	void update(float dt);
 	bool is_running();
 
+	void init();
+
 	void log_body(int id);
-	void log_bodies();
+	void log_bodies(bool show = true);
+
+	std::queue<CreateBodyRequest> body_queue;
 
 	int create_body(CreateBodyRequest request); // Function that accept a request of creating a body
-	int add_body(std::unique_ptr<Body> body);
-	Body* get_body(int id);
-	void remove_body(int id);
+	//void remove_body(int id);
+
+
+	inline std::vector<b2BodyId> get_bodies() { return bodies; }
+
+	inline std::unordered_map<int, size_t> get_ids() { return id2index; }
 
 	static float linearDamping;
 	static float angularDamping;
 
 	static float g;
 
+	inline void setPos(int id, glm::vec2 pos) {
+		b2Vec2 Pos = b2Vec2(pos.x, pos.y);
+		b2BodyId bodyId = bodies[id2index[id]];
+
+		b2Body_SetTransform(bodyId, Pos, b2Body_GetRotation(bodyId));
+		b2Body_SetAwake(bodyId, true);
+	}
+
+	inline void setVelocity(int id, glm::vec2 velocity) {
+		b2Vec2 vel = b2Vec2(velocity.x, velocity.y);
+		b2BodyId bodyId = bodies[id2index[id]];
+
+		b2Body_SetLinearVelocity(bodyId, vel);
+	}
+
+	inline glm::vec2 getPos(int id)
+	{
+		b2BodyId bodyId = bodies[id2index[id]];
+		b2Vec2 pos = b2Body_GetPosition(bodyId);
+		return glm::vec2(pos.x, pos.y);
+	}
+
+	inline float getRotation(int id)
+	{
+		b2BodyId bodyId = bodies[id2index[id]];
+		b2Rot rot = b2Body_GetRotation(bodyId);
+		return glm::atan(rot.s / rot.c);
+	}
+
+	inline glm::vec2 getVelocity(int id)
+	{
+		b2BodyId bodyId = bodies[id2index[id]];
+		b2Vec2 vel = b2Body_GetLinearVelocity(bodyId);
+		return glm::vec2(vel.x, vel.y);
+	}
+
+	std::string get_info(int id);
+
 	void stop();
 
 private:
-	std::vector<std::unique_ptr<Body>> bodies; // Vector of pointers to bodies
+	std::vector<b2BodyId> bodies; // Vector of pointers to bodies
 	std::unordered_map<int, size_t> id2index; // Map of bodies' ids to index in 'bodies' vector
 	Logger logger;
 	std::atomic<bool> running;
 	std::atomic<bool> can_update;
 
-	int next_id = 0; // Stores id of last body added
-};
+	b2WorldDef worldDef;
+	b2WorldId worldId;
+
+	b2BodyDef groundBodyDef;
+	b2BodyId groundId;
+	b2Polygon groundBox;
+	b2ShapeDef groundShapeDef;
+
+	int subStepCount = 4;
+
+	};
 

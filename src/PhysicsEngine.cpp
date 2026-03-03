@@ -1,4 +1,4 @@
-#include "PhysicsEngine.h"
+﻿#include "PhysicsEngine.h"
 #include <iostream>
 
 
@@ -7,9 +7,25 @@ float PhysicsEngine::linearDamping = 1.0;
 float PhysicsEngine::angularDamping = 1.0;
 float PhysicsEngine::g = 9.8f;
 
-PhysicsEngine::PhysicsEngine() : running(true), can_update(true), logger(Logger("PhysicsEngine"))
+PhysicsEngine::PhysicsEngine() : running(true), can_update(true), logger(Logger("PhysicsEngine")) {}
+
+void PhysicsEngine::init()
 {
+	worldDef = b2DefaultWorldDef();
+	worldDef.gravity = b2Vec2(0.0f, -g);
+	worldId = b2CreateWorld(&worldDef);
+
+	groundBodyDef = b2DefaultBodyDef();
+	groundBodyDef.position = b2Vec2(0.0f, -5.5f);
+	groundBodyDef.type = b2_staticBody;
+	
+	groundId = b2CreateBody(worldId, &groundBodyDef);
+	groundBox = b2MakeBox(25.0f, 5.0f);
+	groundShapeDef = b2DefaultShapeDef();
+	b2CreatePolygonShape(groundId, &groundShapeDef, &groundBox);
+
 	logger.info("Initialized.");
+	logger.info(std::format("Ground pos: {} {}", 0.0f, -5.0f));
 }
 
 bool PhysicsEngine::is_running()
@@ -19,149 +35,81 @@ bool PhysicsEngine::is_running()
 
 void PhysicsEngine::update(float dt)
 {
+	if (!body_queue.empty())
+	{
+		create_body(body_queue.front());
+		body_queue.pop();
+	}
 	if (can_update.load())
 	{
-		for (auto& body : bodies)
-		{
-			if (!body.get()) continue;
-
-			body->update(dt);
-			if (RigidBody* rigid = dynamic_cast<RigidBody*>(body.get()))
-			{
-				rigid->applyForce(glm::vec2(0.0f, -rigid->mass * g));
-			}
-
-		}
+		b2World_Step(worldId, 1.0f/60.0f, subStepCount);
+		log_bodies(false);
 	}
 }
 
-int PhysicsEngine::add_body(std::unique_ptr<Body> body)
-{
-	int id = next_id++;
-	id2index[id] = bodies.size();
-	body->id = id;
-	bodies.push_back(std::move(body));
-	return id;
-}
-
-void PhysicsEngine::remove_body(int id)
-{
-	auto it = id2index.find(id);
-	if (it == id2index.end()) return;
-
-	size_t index = it->second;
-	size_t last = bodies.size() - 1;
-
-	if (index != last) {
-		std::swap(bodies[index], bodies[last]);
-		int moved_id = bodies[index]->id;
-		id2index[moved_id] = index;
-	}
-
-	bodies.pop_back();
-	id2index.erase(id);
-}
 
 int PhysicsEngine::create_body(CreateBodyRequest request)
 {
-	can_update.store(false);
-	// Creates body with data got from CreateBodyRequest
-	auto body = std::make_unique<RigidBody>(request.type);
-	body->setPos(request.pos);
-	body->setVelocity(request.velocity);
-	body->mass = request.mass;
-	int id = add_body(std::move(body));
-	logger.info(std::format("id {} pos [{}, {}]; velocity [{}, {}]", id, request.pos.x, request.pos.y,
-		request.velocity.x, request.velocity.y));
-	can_update.store(true);
-	return id;
+	logger.info(std::format("world index: {}", worldId.index1));
+	b2BodyDef bodyDef = b2DefaultBodyDef()
+	
+	bodyDef.type = b2_dynamicBody;
+	bodyDef.position = b2Vec2(request.pos.x, request.pos.y);
+
+	b2BodyId bodyId = b2CreateBody(worldId, &bodyDef);
+
+	b2ShapeDef shapeDef = b2DefaultShapeDef();
+	shapeDef.density = 1.0f;
+	shapeDef.material.friction = 0.3f;
+
+	b2Polygon box = b2MakeBox(0.5f, 0.5f);
+
+	b2CreatePolygonShape(bodyId, &shapeDef, &box);
+
+	b2Body_SetLinearVelocity(bodyId, b2Vec2(0.0f, 0.0f));
+
+	id2index[request.id] = bodies.size();
+	bodies.push_back(bodyId);
+	
+
+	logger.info(std::format("id {} pos [{}, {}]; velocity [{}, {}]",
+		request.id,
+		request.pos.x,
+		request.pos.y,
+		request.velocity.x,
+		request.velocity.y));
+
+	return request.id;
 }
+
 
 void PhysicsEngine::log_body(int id)
 {
-	logger.info(bodies[id2index[id]]->get_info());
+	logger.info(get_info(id));
 }
 
-void PhysicsEngine::log_bodies()
+void PhysicsEngine::log_bodies(bool show)
 {
-	for (auto& body : bodies)
+	for (auto it : id2index)
 	{
-		logger.info(body->get_info());
+		logger.info(get_info(it.first), show);
 	}
 }
 
 
 
-// Body
-
-Body* PhysicsEngine::get_body(int id)
+std::string PhysicsEngine::get_info(int id)
 {
-	auto it = id2index.find(id);
-	if (it == id2index.end()) return nullptr;
-	return bodies[it->second].get();
-}
-
-std::string Body::get_info()
-{
-	return std::format("Body {}: pos [{}, {}]; velocity [{}, {}], acceleration [{}, {}]", 
+	glm::vec2 pos = getPos(id);
+	glm::vec2 velocity = getVelocity(id);
+	return std::format("Body {}: pos [{}, {}]; velocity [{}, {}]", 
 		id, pos.x, pos.y,
-		velocity.x, velocity.y, 
-		acceleration.x, acceleration.y);
-}
-
-Body::~Body() {}
-
-
-
-// RigidBody
-
-RigidBody::RigidBody(BodyType type) :
-	angle(0), angularVelocity(0), angularAcceleration(0),
-	invMass(1), inertia(1), invInertia(1),
-	forceAccumulator(glm::vec2(0,0)),
-	torqueAccumulator(0),
-	impulseAccumulator(0),
-	type(type),
-	isTrigger(false)
-{
-	pos = glm::vec2(0, 0);
-	acceleration = glm::vec2(0, 0);
-	velocity = glm::vec2(0, 0);
-}
-
-void RigidBody::update(float dt)
-{
-
-	// Computing velocity and acceleration from the accumulators
-	velocity += impulseAccumulator * invMass;
-	acceleration += forceAccumulator * invMass;
-	
-	// Computing new velocity
-	velocity += acceleration * dt;
-
-	// Computing position
-	pos += velocity * dt;
-
-	// Computing new angles and angular velocities etc
-	angularAcceleration += torqueAccumulator * invInertia;
-	angularVelocity += angularAcceleration * dt;
-	angle += angularVelocity * dt;
-
-	// Damping
-	velocity *= PhysicsEngine::linearDamping;
-	angularVelocity *= PhysicsEngine::angularDamping;
-
-	// Resetting accumulators
-	impulseAccumulator = glm::vec2(0.0f);
-	forceAccumulator = glm::vec2(0.0f);
-	torqueAccumulator = 0.0f;
-	acceleration = glm::vec2(0.0f);
-	angularAcceleration = 0.0f;
-
+		velocity.x, velocity.y);
 }
 
 void PhysicsEngine::stop()
 {
+	b2DestroyWorld(worldId);
 	running.store(false);
 }
 

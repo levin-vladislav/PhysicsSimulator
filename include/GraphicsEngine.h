@@ -49,10 +49,11 @@ public:
 	void setGrid(float gridSize, float gridThickness);
 	std::queue<CreateRenderObjectRequest> objectQueue;
 
+	std::vector<RenderObject> objects;
+
 private:
 	std::atomic<bool> running;
 	Logger logger;
-	std::vector<RenderObject> objects;
 	std::unordered_map<int, size_t> id2index;
 	int next_id = 0;
 
@@ -78,6 +79,8 @@ private:
 	GLuint gridSizeLoc;
 	GLuint gridVAO;
 	GLuint gridVBO;
+
+
 
 };
 

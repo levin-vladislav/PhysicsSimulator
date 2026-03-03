@@ -14,6 +14,11 @@ bool Engine::is_running() const
 
 void Engine::update(float dt)
 {
+	for (auto it : physicsEngine.get_ids())
+	{
+		graphicsEngine.objects[it.first].pos = physicsEngine.getPos(it.first);
+		graphicsEngine.objects[it.first].rotation = physicsEngine.getRotation(it.first);
+	}
 	physicsEngine.update(dt);
 	graphicsEngine.update(dt);
 }
@@ -37,6 +42,19 @@ void Engine::main_loop()
 	graphicsEngine.init_window();
 	graphicsEngine.init_shaders();
 	graphicsEngine.init_grid();
+	physicsEngine.init();
+	graphicsEngine.objectQueue.push(
+		CreateRenderObjectRequest 
+		{
+			glm::vec2(0.0f, -5.5f),
+			std::vector<float> {
+				-25.0f, -5.0f,
+				25.0f, -5.0f,
+				25.0f, 5.0f,
+				-25.0f, 5.0f
+			}
+		}
+	);
 	std::cout << "mainloop thread: " << std::this_thread::get_id() << std::endl;
 
 	using clock = std::chrono::high_resolution_clock;
@@ -47,7 +65,8 @@ void Engine::main_loop()
 	{
 		auto now = clock::now();
 		std::chrono::duration<float> delta = now - last_time;
-		float dt = delta.count();
+		float dt = delta.count() / 1000.0f;
+
 		last_time = now;
 		if (dt > 0.5)
 		{
@@ -60,6 +79,7 @@ void Engine::main_loop()
 
 		try
 		{
+			dt = 1.0f / 60.0f;
 			update(dt);
 		}
 		catch (char* e)
@@ -67,6 +87,7 @@ void Engine::main_loop()
 			logger.error("Unexpected error occured:");
 			logger.error(e);
 		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 			
 		// Runs update function with dt equal to time difference between ticks
 	}
@@ -79,9 +100,12 @@ void Engine::request(CreateBodyRequest physics_request,
 					 CreateRenderObjectRequest graphics_request)
 {
 	// Manages requesting. Later could be request via JSON
-	int id = physicsEngine.create_body(physics_request);
-	graphics_request.id = id;
+	physics_request.id = next_id;
+	physicsEngine.body_queue.push(physics_request);
+	graphics_request.id = next_id;
 	graphicsEngine.objectQueue.push(graphics_request);
+
+	next_id++;
 }
 
 

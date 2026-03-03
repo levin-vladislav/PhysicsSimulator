@@ -64,12 +64,8 @@ void Interpreter::init_commands()
             
             try {
                 size_t pos;
-                time = std::stoi(time_str, &pos);  
-                if (pos != time_str.length()) { 
-                    logger.error("Not a number value was given");
-                    return;
-                }
-                
+                time = int(std::stof(time_str, &pos) * 1000.0f);  
+                                
             }
             catch (...) {
                 logger.error("Not a number value was given");
@@ -81,7 +77,7 @@ void Interpreter::init_commands()
             std::getline(iss, new_args);
             
             auto f = [this, time, command, new_args]() {
-                std::this_thread::sleep_for(std::chrono::seconds(time));
+                std::this_thread::sleep_for(std::chrono::milliseconds(time));
                 this->execute(command, new_args);
                 };
 
@@ -129,15 +125,14 @@ void Interpreter::init_commands()
                 float m = std::stof(m_string);
                 engine_ptr->request(CreateBodyRequest{ glm::vec2(x, y), 
                                                        glm::vec2(0.0f, 0.0f),
-                                                       m,
-                                                       BodyType::KINEMATIC},
+                                                       m},
                     CreateRenderObjectRequest
                     {
                     glm::vec2(x, y),
-                    std::vector<float> {-0.3f, -0.3f, 
-                                        0.3f, -0.3f,
-                                         0.3f, 0.3f, 
-                                         -0.3f, 0.3f},
+                    std::vector<float> {-0.5f, -0.5f, 
+                                        0.5f, -0.5f,
+                                         0.5f, 0.5f, 
+                                         -0.5f, 0.5f},
                     });
             }
             catch (const std::invalid_argument& e) {
@@ -184,6 +179,80 @@ void Interpreter::init_commands()
 
         });
     add_command(setCameraPos);
+
+    Command setBodyPos = Command("setBodyPos");
+    setBodyPos.add_description("setBodyPos [id] [x] [y] - sets body pos to given coordinates");
+    setBodyPos.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string i_string;
+            std::string x_string;
+            std::string y_string;
+
+            if (!(iss >> i_string >> x_string >> y_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                int id = std::stoi(i_string);
+                float x = std::stof(x_string);
+                float y = std::stof(y_string);
+                this->engine_ptr->physicsEngine.setPos(id, glm::vec2(x, y));
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setBodyPos);
+
+    Command setBodyVelocity = Command("setBodyVelocity");
+    setBodyVelocity.add_description("setBodyVelocity [id] [x] [y] - sets body velocity to given values");
+    setBodyVelocity.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string i_string;
+            std::string x_string;
+            std::string y_string;
+
+            if (!(iss >> i_string >> x_string >> y_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                int id = std::stoi(i_string);
+                float x = std::stof(x_string);
+                float y = std::stof(y_string);
+                this->engine_ptr->physicsEngine.setVelocity(id, glm::vec2(x, y));
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setBodyVelocity);
 
     Command moveCamera = Command("moveCamera");
     moveCamera.add_description("moveCamera [x] [y] - moves camera on the given step");

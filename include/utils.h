@@ -16,14 +16,12 @@
 #include <queue>
 
 
-enum class BodyType { STATIC, DYNAMIC, KINEMATIC };
-
 struct CreateBodyRequest
 {
 	glm::vec2 pos;
 	glm::vec2 velocity;
 	float mass;
-	BodyType type;
+	int id = 0;
 };
 
 struct CreateRenderObjectRequest

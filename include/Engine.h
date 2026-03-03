@@ -33,4 +33,6 @@ private:
 	Logger logger; // Engine logger
 
 	void main_loop();
+
+	int next_id = 1;
 };
