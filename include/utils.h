@@ -15,19 +15,25 @@
 #include <chrono>
 #include <queue>
 
-
+// request for PhysicsEngine
 struct CreateBodyRequest
 {
 	glm::vec2 pos;
 	glm::vec2 velocity;
 	float mass;
+	int shape;
+	float radius;
 	int id = 0;
+	bool isStatic = false;
 };
 
+// request for GraphicsEngine
 struct CreateRenderObjectRequest
 {
 	glm::vec2 pos;
 	std::vector<float> vertices;
+	int shape;
+	float radius;
 	int id = 0;
 };
 

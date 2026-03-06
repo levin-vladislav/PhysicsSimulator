@@ -1,10 +1,24 @@
 ﻿#include "Engine.h"
 #include "Dispatcher.h"
 #include "Logger.h"
+#include <windows.h>
 #include <atomic>
+
+void EnableANSI()
+{
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE) return;
+
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode)) return;
+
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hOut, dwMode);
+}
 
 int main()
 {   
+    EnableANSI();
     // Prepearing shutdown variable
     std::atomic<bool> shutdown = false;
 

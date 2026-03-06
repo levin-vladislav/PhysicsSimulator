@@ -55,7 +55,6 @@ void Engine::main_loop()
 			}
 		}
 	);
-	std::cout << "mainloop thread: " << std::this_thread::get_id() << std::endl;
 
 	using clock = std::chrono::high_resolution_clock;
 
@@ -70,16 +69,14 @@ void Engine::main_loop()
 		last_time = now;
 		if (dt > 0.5)
 		{
-			dt = 0.5;
+			dt = 0.5f;
 		}
-		else if (dt < 0.02)
+		else if (dt < 0.02f)
 		{
-			dt = 0.02;
+			dt = 0.02f;
 		}
-
 		try
 		{
-			dt = 1.0f / 60.0f;
 			update(dt);
 		}
 		catch (char* e)
@@ -99,7 +96,7 @@ void Engine::main_loop()
 void Engine::request(CreateBodyRequest physics_request,
 					 CreateRenderObjectRequest graphics_request)
 {
-	// Manages requesting. Later could be request via JSON
+	// Manages requesting
 	physics_request.id = next_id;
 	physicsEngine.body_queue.push(physics_request);
 	graphics_request.id = next_id;

@@ -96,9 +96,9 @@ void Interpreter::init_commands()
     add_command(body_list);
 
 
-    // create [x] [y] [mass] - creates a kinematic rigid body in given coordinates
+    // create [x] [y] [mass] - creates a dynamic rigid body in given coordinates
     Command create = Command("create");
-    create.add_description("create [x] [y] [mass] - creates a kinematic rigid body in given coordinates");
+    create.add_description("create [x] [y] [mass] [shape] [size] - creates a dynamic rigid body in given coordinates");
     create.set_callback([this](std::string args)
         {
             if (args.empty())
@@ -111,28 +111,49 @@ void Interpreter::init_commands()
             std::string x_string;
             std::string y_string;
             std::string m_string;
+            std::string s_string;
+            std::string r_string;
 
-            if (!(iss >> x_string >> y_string >> m_string))
+            if (!(iss >> x_string >> y_string >> m_string >> s_string >> r_string))
             {
                 logger.error("Not enough values were given!");
                 return;
             }
-
             try
             {
                 float x = std::stof(x_string);
                 float y = std::stof(y_string);
                 float m = std::stof(m_string);
+                float r = std::stof(r_string);
+
+                int shape;
+                if (s_string == "circle")
+                {
+                    shape = 1;
+                }
+                else if (s_string == "rectangle" || s_string == "")
+                {
+                    shape = 0;
+                }
+                else
+                {
+                    logger.error("Unknown shape type was given! Drawing a rectangle");
+                    shape = 0;
+                }
                 engine_ptr->request(CreateBodyRequest{ glm::vec2(x, y), 
                                                        glm::vec2(0.0f, 0.0f),
-                                                       m},
+                                                       m,
+                    shape,
+                    r/2},
                     CreateRenderObjectRequest
                     {
                     glm::vec2(x, y),
-                    std::vector<float> {-0.5f, -0.5f, 
-                                        0.5f, -0.5f,
-                                         0.5f, 0.5f, 
-                                         -0.5f, 0.5f},
+                    std::vector<float> {-r/2, -r/2, 
+                                        r/2, -r/2,
+                                         r/2, r/2, 
+                                         -r/2, r/2},
+                    shape,
+                    r/2
                     });
             }
             catch (const std::invalid_argument& e) {
@@ -145,6 +166,76 @@ void Interpreter::init_commands()
         });
     add_command(create);
 
+    // createStatic [x] [y] [shape] [size] - creates a static rigid body in given coordinates
+    Command createStatic = Command("createStatic");
+    createStatic.add_description("createStatic [x] [y] [shape] [size] - creates a static rigid body in given coordinates");
+    createStatic.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string x_string;
+            std::string y_string;
+            std::string s_string;
+            std::string r_string;
+
+            if (!(iss >> x_string >> y_string >> s_string >> r_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+
+            try
+            {
+                float x = std::stof(x_string);
+                float y = std::stof(y_string);
+                float r = std::stof(r_string);
+
+                int shape;
+                if (s_string == "circle")
+                {
+                    shape = 1;
+                }
+                else if (s_string == "rectangle" || s_string == "")
+                {
+                    shape = 0;
+                }
+                else
+                {
+                    logger.error("Unknown shape type was given! Drawing a rectangle");
+                    shape = 0;
+                }
+                engine_ptr->request(CreateBodyRequest{ glm::vec2(x, y),
+                                                       glm::vec2(0.0f, 0.0f),
+                                                       0.0f,
+                    shape,
+                    r / 2, true },
+                    CreateRenderObjectRequest
+                    {
+                    glm::vec2(x, y),
+                    std::vector<float> {-r / 2, -r / 2,
+                                        r / 2, -r / 2,
+                                         r / 2, r / 2,
+                                         -r / 2, r / 2},
+                    shape,
+                    r / 2
+                    });
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(createStatic);
+
+    // setCameraPos [x] [y] - sets camera pos to given coordinates
     Command setCameraPos = Command("setCameraPos");
     setCameraPos.add_description("setCameraPos [x] [y] - sets camera pos to given coordinates");
     setCameraPos.set_callback([this](std::string args)
@@ -180,6 +271,7 @@ void Interpreter::init_commands()
         });
     add_command(setCameraPos);
 
+    // setBodyPos [id] [x] [y] - sets body pos to given coordinates
     Command setBodyPos = Command("setBodyPos");
     setBodyPos.add_description("setBodyPos [id] [x] [y] - sets body pos to given coordinates");
     setBodyPos.set_callback([this](std::string args)
@@ -217,6 +309,7 @@ void Interpreter::init_commands()
         });
     add_command(setBodyPos);
 
+    // setBodyVelocity [id] [x] [y] - sets body velocity to given values
     Command setBodyVelocity = Command("setBodyVelocity");
     setBodyVelocity.add_description("setBodyVelocity [id] [x] [y] - sets body velocity to given values");
     setBodyVelocity.set_callback([this](std::string args)
@@ -254,6 +347,47 @@ void Interpreter::init_commands()
         });
     add_command(setBodyVelocity);
 
+    // throwBody [id] [velocity] [angle (degrees)] - throws body with given velocity and with given angle to the earth
+    Command throwBody = Command("throwBody");
+    throwBody.add_description("throwBody [id] [velocity] [angle (degrees)] - throws body with given velocity and with given angle to the earth");
+    throwBody.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string i_string;
+            std::string v_string;
+            std::string a_string;
+
+            if (!(iss >> i_string >> v_string >> a_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                int id = std::stoi(i_string);
+                float v = std::stof(v_string);
+                float a = std::stof(a_string);
+                float vx = glm::cos(a * 3.141592653589793f / 180.0f)*v;
+                float vy = glm::sin(a * 3.141592653589793f / 180.0f)*v;
+                this->engine_ptr->physicsEngine.setVelocity(id, glm::vec2(vx, vy));
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(throwBody);
+
+    // moveCamera [x] [y] - moves camera on the given step
     Command moveCamera = Command("moveCamera");
     moveCamera.add_description("moveCamera [x] [y] - moves camera on the given step");
     moveCamera.set_callback([this](std::string args)
@@ -289,6 +423,7 @@ void Interpreter::init_commands()
         });
     add_command(moveCamera);
 
+    // setZoom [zoom] - sets zoom
     Command setZoom = Command("setZoom");
     setZoom.add_description("setZoom [zoom] - sets zoom");
     setZoom.set_callback([this](std::string args)
@@ -322,6 +457,41 @@ void Interpreter::init_commands()
         });
     add_command(setZoom);
 
+    // setG [g] - sets g (default = 9.8)
+    Command setG = Command("setG");
+    setG.add_description("setG [g] - sets g (default = 9.8)");
+    setG.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string g_string;
+
+            if (!(iss >> g_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                float g = std::stof(g_string);
+                this->engine_ptr->physicsEngine.setG(g);
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setG);
+
+    // "zoom [zoom] - multiplies current zoom on giving value
     Command Zoom = Command("zoom");
     Zoom.add_description("zoom [zoom] - multiplies current zoom on giving value");
     Zoom.set_callback([this](std::string args)
@@ -355,6 +525,7 @@ void Interpreter::init_commands()
         });
     add_command(Zoom);
 
+    // setGrid [size] [thickness] - sets grid
     Command setGrid = Command("setGrid");
     setGrid.add_description("setGrid [size] [thickness] - sets grid");
     setGrid.set_callback([this](std::string args)
@@ -390,6 +561,100 @@ void Interpreter::init_commands()
         });
     add_command(setGrid);
 
+    // setFriction [id] [friction] - sets friction for a body
+    Command setFriction = Command("setFriction");
+    setFriction.add_description("setFriction [id] [friction] - sets friction for a body");
+    setFriction.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string i_string;
+            std::string f_string;
+
+            if (!(iss >> i_string >> f_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                int i = std::stoi(i_string);
+                float f = std::stof(f_string);
+                this->engine_ptr->physicsEngine.setFriction(i, f);
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float or int was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setFriction);
+
+    // setLogFrequency [n] - logs body information to a file each n ticks
+    Command setLogFrequency = Command("setLogFrequency");
+    setLogFrequency.add_description("setLogFrequency [n] - logs body information to a file each n ticks");
+    setLogFrequency.set_callback([this](std::string args)
+        {
+            if (args.empty())
+            {
+                logger.error("Invalid arguments given");
+                return;
+            }
+
+            std::istringstream iss(args);
+            std::string n_string;
+
+            if (!(iss >> n_string))
+            {
+                logger.error("Not enough values were given!");
+                return;
+            }
+            try
+            {
+                int n = std::stoi(n_string);
+                engine_ptr->physicsEngine.setLogTimeStep(n);
+            }
+            catch (const std::invalid_argument& e) {
+                logger.error("Invalid float was given");
+            }
+            catch (const std::out_of_range& e) {
+                logger.error("Float out of range was given");
+            }
+
+        });
+    add_command(setLogFrequency);
+
+    // pause - pauses simulation
+    Command pause = Command("pause");
+    pause.add_description("pause - pauses simulation");
+    pause.set_callback([this](std::string args)
+        {
+            engine_ptr->physicsEngine.pause();
+            logger.info("Simulation paused.");
+        });
+    add_command(pause);
+
+    // toggle - toggle running state of simulation
+    Command toggle = Command("toggle");
+    toggle.add_description("toggle - toggle running state of simulation");
+    toggle.set_callback([this](std::string args)
+        {
+            engine_ptr->physicsEngine.toggle();
+            if (engine_ptr->physicsEngine.is_running())
+            {
+                logger.info("Simulation is running.");
+            }
+            else logger.info("Simulation paused.");
+        });
+    add_command(toggle);
+
     // help - show that list
     Command help = Command("help");
     help.add_description("help - show that list");
@@ -416,13 +681,13 @@ void Interpreter::init_commands()
                 }
 
                 logger.raw(commands[command].get_description());
-                
+
             }
-            
+
         });
     add_command(help);
-}
 
+}
 
 void Interpreter::run_command(std::string command)
 {

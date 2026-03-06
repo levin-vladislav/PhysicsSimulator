@@ -20,7 +20,7 @@ bool GraphicsEngine::is_running() const
 }
 
 RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices, 
-    GLuint shaderProgram, GLuint modelLoc, GLFWwindow* window)
+    GLuint shaderProgram, GLuint modelLoc, GLFWwindow* window, int shape, float radius)
 {
     this->vertices = vertices;
     this->window = window;
@@ -28,6 +28,11 @@ RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices,
     this->shaderProgram = shaderProgram;
     this->modelLoc = modelLoc;
     this->id = id;
+    this->shape = shape;
+    this->radius = radius;
+    rotation = 0.0f;
+    translation = glm::vec2(0.0f);
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
@@ -38,7 +43,6 @@ RenderObject::RenderObject(int id, glm::vec2 pos, std::vector<float> vertices,
     glEnableVertexAttribArray(0);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-
 }
 
 RenderObject GraphicsEngine::create_object(CreateRenderObjectRequest request)
@@ -48,15 +52,19 @@ RenderObject GraphicsEngine::create_object(CreateRenderObjectRequest request)
         request.pos, request.vertices,
         bodyShaderProgram,
         modelLoc,
-        window);
+        window,
+        request.shape,
+        request.radius);
 }
 
 void RenderObject::update()
 {   
+    glUseProgram(shaderProgram);
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(pos, 0.0f));
     model = glm::rotate(model, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -106,9 +114,12 @@ void GraphicsEngine::update(float dt)
 
     if (can_update.load())
     {
-        glUseProgram(bodyShaderProgram);
+        
         for (RenderObject& obj : objects)
             {
+                glUseProgram(bodyShaderProgram);
+                glUniform1i(shapeLoc, obj.shape);
+                glUniform1f(radiusLoc, obj.radius);
                 obj.update();
             }
     }
@@ -207,7 +218,10 @@ void GraphicsEngine::init_shaders()
     }
     viewLoc = glGetUniformLocation(bodyShaderProgram, "view");
     modelLoc = glGetUniformLocation(bodyShaderProgram, "model");
-    
+
+    shapeLoc = glGetUniformLocation(bodyShaderProgram, "shape");
+    radiusLoc = glGetUniformLocation(bodyShaderProgram, "radius");
+
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
     gridShaderProgram = createProgram("shaders\\grid.vx", "shaders\\grid.fg");

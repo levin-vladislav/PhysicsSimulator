@@ -20,7 +20,6 @@ std::unordered_map<MessageType, std::string> MessageTypeToStr =
 
 Logger::Logger(std::string name) : name(name) {}
 
-
 std::string generateLogFileName() {
     // Function generating log file name in format:
     // YY-MM-DD-N.txt      N - number of logs this day
@@ -57,7 +56,6 @@ void Logger::info(std::string text, bool show)
 {   
     log(text, MessageType::INFO, name, show);
 }
-
 
 void Logger::warn(std::string text, bool show)
 {
@@ -160,7 +158,6 @@ void Logger::stop()
         logger_thread.join();
     }
 }
-
 
 Message::Message(std::string text, MessageType type, std::string name, bool show) : 
     text(text), type(type), show(show), name(name) {}

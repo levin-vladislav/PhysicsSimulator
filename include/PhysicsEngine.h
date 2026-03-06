@@ -26,17 +26,12 @@ public:
 	std::queue<CreateBodyRequest> body_queue;
 
 	int create_body(CreateBodyRequest request); // Function that accept a request of creating a body
-	//void remove_body(int id);
-
-
+	
 	inline std::vector<b2BodyId> get_bodies() { return bodies; }
 
 	inline std::unordered_map<int, size_t> get_ids() { return id2index; }
 
-	static float linearDamping;
-	static float angularDamping;
-
-	static float g;
+	float g = 9.8f;
 
 	inline void setPos(int id, glm::vec2 pos) {
 		b2Vec2 Pos = b2Vec2(pos.x, pos.y);
@@ -74,7 +69,18 @@ public:
 		return glm::vec2(vel.x, vel.y);
 	}
 
+	void setGroundFriction(float friction);
+
+	inline void setG(float g) { this->g = g; }
+
+	void setFriction(int id, float friction);
+
 	std::string get_info(int id);
+
+	inline void pause() { can_update.store(false); }
+	inline void toggle() { can_update.store(!can_update.load()); }
+
+	inline void setLogTimeStep(int n) { logTimeStep = n; }
 
 	void stop();
 
@@ -92,6 +98,10 @@ private:
 	b2BodyId groundId;
 	b2Polygon groundBox;
 	b2ShapeDef groundShapeDef;
+
+	int logTimeStep = 15;
+
+	int log_i = 0;
 
 	int subStepCount = 4;
 

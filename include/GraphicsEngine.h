@@ -5,30 +5,33 @@
 #include "GLFW/glfw3.h"
 #pragma once
 
+// class that stores information of renderable objects
 class RenderObject
 {
 public:
 	RenderObject(int id, glm::vec2 pos, std::vector<float> vertices,
-		GLuint shaderProgram, GLuint modelLoc, GLFWwindow* window);
+		GLuint shaderProgram, GLuint modelLoc, GLFWwindow* window, int shape = 0, float radius = 1.0f);
 	int id;
 	glm::vec2 pos;
-	glm::vec2 size;
+	// glm::vec2 size;
 	void update();
 	glm::vec2 translation;
 	float rotation;
-	float scale;
+	float radius;
 	std::vector<float> vertices;
+	int shape;
 
 private:
 	GLuint VAO;
 	GLuint VBO;
 	GLuint shaderProgram;
-	GLuint FBO;
-	GLuint texture;
+	// GLuint FBO;
+	// GLuint texture;
 	GLFWwindow* window;
 	GLuint modelLoc;
 };
 
+// Class managing graphics
 class GraphicsEngine
 {
 public:
@@ -36,7 +39,7 @@ public:
 	void update(float dt);
 	bool is_running() const;
 	int add_object(RenderObject object);
-	void remove_object(int id);
+	// void remove_object(int id);
 	RenderObject create_object(CreateRenderObjectRequest request);
 	void stop();
 	void init_window();
@@ -58,12 +61,12 @@ private:
 	int next_id = 0;
 
 	std::atomic<bool> can_update = true;
-	glm::vec2 camera_pos;
+	glm::vec2 camera_pos = glm::vec2(0.0f);
 	float zoom = 1.0f;
-	int window_width;
-	int window_height;
-	bool fullscreen;
-	float aspect;
+	int window_width = 800;
+	int window_height = 600;
+	bool fullscreen = false;
+	float aspect = (float)window_width / (float)window_height;
 	float gridSize = 0.2f;
 	float gridThickness = 0.01f;
 	glm::mat4 view = glm::mat4(1.0f);
@@ -73,6 +76,9 @@ private:
 	GLuint gridShaderProgram;
 	GLuint viewLoc;
 	GLuint modelLoc;
+	GLuint radiusLoc;
+	GLuint shapeLoc;
+
 	GLuint gridThicknessLoc;
 	GLuint gridViewLoc;
 	GLuint gridModelLoc;

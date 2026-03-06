@@ -3,9 +3,6 @@
 
 
 // PhysicsEngine
-float PhysicsEngine::linearDamping = 1.0;
-float PhysicsEngine::angularDamping = 1.0;
-float PhysicsEngine::g = 9.8f;
 
 PhysicsEngine::PhysicsEngine() : running(true), can_update(true), logger(Logger("PhysicsEngine")) {}
 
@@ -43,28 +40,51 @@ void PhysicsEngine::update(float dt)
 	if (can_update.load())
 	{
 		b2World_Step(worldId, 1.0f/60.0f, subStepCount);
-		log_bodies(false);
+		if (log_i++ == logTimeStep)
+		{
+			log_bodies(false);
+			log_i = 0;
+		}
 	}
 }
-
 
 int PhysicsEngine::create_body(CreateBodyRequest request)
 {
 	logger.info(std::format("world index: {}", worldId.index1));
-	b2BodyDef bodyDef = b2DefaultBodyDef()
+	b2BodyDef bodyDef = b2DefaultBodyDef();
 	
 	bodyDef.type = b2_dynamicBody;
+	if (!request.isStatic)
+	{
+		bodyDef.type = b2_dynamicBody;
+	}
+	else
+	{ 
+		bodyDef.type = b2_staticBody;
+	}
+
 	bodyDef.position = b2Vec2(request.pos.x, request.pos.y);
 
 	b2BodyId bodyId = b2CreateBody(worldId, &bodyDef);
 
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
-	shapeDef.density = 1.0f;
+	shapeDef.density = request.mass / (request.radius * request.radius);
 	shapeDef.material.friction = 0.3f;
+	shapeDef.material.restitution = 1.0f;
 
-	b2Polygon box = b2MakeBox(0.5f, 0.5f);
-
-	b2CreatePolygonShape(bodyId, &shapeDef, &box);
+	if (request.shape == 0)
+	{
+		b2Polygon box = b2MakeBox(request.radius, request.radius);
+		b2CreatePolygonShape(bodyId, &shapeDef, &box);
+	}
+	else if (request.shape == 1)
+	{
+		b2Circle circle = b2Circle();
+		circle.radius = request.radius;
+		circle.center = b2Vec2(0.0f, 0.0f);
+		b2CreateCircleShape(bodyId, &shapeDef, &circle);
+	}
+	
 
 	b2Body_SetLinearVelocity(bodyId, b2Vec2(0.0f, 0.0f));
 
@@ -82,6 +102,28 @@ int PhysicsEngine::create_body(CreateBodyRequest request)
 	return request.id;
 }
 
+void PhysicsEngine::setFriction(int id, float friction)
+{
+	b2ShapeId shapes[8];
+	b2BodyId bodyId = bodies[id2index[id]];
+	int shapeCount = b2Body_GetShapes(bodyId, shapes, 8);
+
+	for (int i = 0; i < shapeCount; i++)
+	{
+		b2Shape_SetFriction(shapes[i], friction);
+	}
+}
+
+void PhysicsEngine::setGroundFriction(float friction)
+{
+	b2ShapeId shapes[8];
+	int shapeCount = b2Body_GetShapes(groundId, shapes, 8);
+
+	for (int i = 0; i < shapeCount; i++)
+	{
+		b2Shape_SetFriction(shapes[i], friction);
+	}
+}
 
 void PhysicsEngine::log_body(int id)
 {
@@ -95,8 +137,6 @@ void PhysicsEngine::log_bodies(bool show)
 		logger.info(get_info(it.first), show);
 	}
 }
-
-
 
 std::string PhysicsEngine::get_info(int id)
 {
