@@ -84,7 +84,7 @@ void Engine::main_loop()
 			logger.error("Unexpected error occured:");
 			logger.error(e);
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(1000*dt)));
 			
 		// Runs update function with dt equal to time difference between ticks
 	}

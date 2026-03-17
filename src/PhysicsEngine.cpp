@@ -70,7 +70,7 @@ int PhysicsEngine::create_body(CreateBodyRequest request)
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
 	shapeDef.density = request.mass / (request.radius * request.radius);
 	shapeDef.material.friction = 0.3f;
-	shapeDef.material.restitution = 1.0f;
+	shapeDef.material.restitution = 0.2f;
 
 	if (request.shape == 0)
 	{

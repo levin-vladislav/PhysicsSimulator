@@ -31,8 +31,6 @@ int main()
     // Starting Engine and Dispatcher
     Engine engine = Engine();
     Dispatcher dispatcher = Dispatcher(&engine, &shutdown);
-    
-    
 
     // Main loop
     try
@@ -54,6 +52,5 @@ int main()
     dispatcher.stop();
     
     return 0;
-
 }
 

@@ -156,7 +156,6 @@ void GraphicsEngine::setGrid(float gridSize, float gridThickness)
     this->gridThickness = gridThickness;
 }
 
-
 void GraphicsEngine::init_window()
 {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
