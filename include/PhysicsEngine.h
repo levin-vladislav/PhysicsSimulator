@@ -50,9 +50,13 @@ public:
 
 	inline glm::vec2 getPos(int id)
 	{
-		b2BodyId bodyId = bodies[id2index[id]];
-		b2Vec2 pos = b2Body_GetPosition(bodyId);
-		return glm::vec2(pos.x, pos.y);
+		if (id2index.contains(id))
+		{
+			b2BodyId bodyId = bodies[id2index[id]];
+			b2Vec2 pos = b2Body_GetPosition(bodyId);
+			return glm::vec2(pos.x, pos.y);
+		}
+		return glm::vec2(0.0f, 0.0f);
 	}
 
 	inline float getRotation(int id)
@@ -87,6 +91,7 @@ public:
 private:
 	std::vector<b2BodyId> bodies; // Vector of pointers to bodies
 	std::unordered_map<int, size_t> id2index; // Map of bodies' ids to index in 'bodies' vector
+
 	Logger logger;
 	std::atomic<bool> running;
 	std::atomic<bool> can_update;
@@ -105,5 +110,5 @@ private:
 
 	int subStepCount = 4;
 
-	};
+};
 

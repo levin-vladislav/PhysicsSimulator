@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib/glfw-3.4.bin.WIN64/include;$(ProjectDir)lib/glm-master;$(ProjectDir)include;$(ProjectDir)lib/glew-2.1.0/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib/glfw-3.4.bin.WIN64/include;$(ProjectDir)lib/glm-master;$(ProjectDir)include;$(ProjectDir)lib/glew-2.1.0/include;$(ProjectDir)imgui</AdditionalIncludeDirectories>
       <TranslateIncludes>true</TranslateIncludes>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -151,6 +151,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp">
       <TranslateIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</TranslateIncludes>
       <TranslateIncludes Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TranslateIncludes>

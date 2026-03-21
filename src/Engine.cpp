@@ -21,6 +21,8 @@ void Engine::update(float dt)
 	}
 	physicsEngine.update(dt);
 	graphicsEngine.update(dt);
+	//if (graphicsEngine.click.load()){}\
+
 }
 
 void Engine::start()
@@ -39,10 +41,10 @@ void Engine::stop()
 
 void Engine::main_loop()
 {
-	graphicsEngine.init_window();
+	physicsEngine.init();
+	graphicsEngine.init_window(dispatcher_ptr);
 	graphicsEngine.init_shaders();
 	graphicsEngine.init_grid();
-	physicsEngine.init();
 	graphicsEngine.objectQueue.push(
 		CreateRenderObjectRequest 
 		{
@@ -59,6 +61,20 @@ void Engine::main_loop()
 	using clock = std::chrono::high_resolution_clock;
 
 	auto last_time = clock::now();
+
+	std::ifstream file("simulation.txt");
+
+	if (file.is_open())
+	{
+		std::string line;
+		while (std::getline(file, line)) {
+			dispatcher_ptr->interpreter.run_command(line);
+		}
+		file.close();
+	}
+	else {
+		std::cerr << "Error opening file" << std::endl;
+	}
 
 	while (running.load())
 	{

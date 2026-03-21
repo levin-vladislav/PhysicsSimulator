@@ -2,6 +2,7 @@
 #include "Dispatcher.h"
 #include "Logger.h"
 #include <windows.h>
+
 #include <atomic>
 
 void EnableANSI()
@@ -30,7 +31,7 @@ int main()
 
     // Starting Engine and Dispatcher
     Engine engine = Engine();
-    Dispatcher dispatcher = Dispatcher(&engine, &shutdown);
+    Dispatcher dispatcher = Dispatcher(&engine, &shutdown);  
 
     // Main loop
     try

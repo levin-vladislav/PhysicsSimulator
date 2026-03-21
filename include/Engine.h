@@ -27,6 +27,8 @@ public:
 	PhysicsEngine physicsEngine; // Manages physics in the project
 	GraphicsEngine graphicsEngine; // Manages graphics in the project
 
+
+	Dispatcher* dispatcher_ptr;
 private:
 	std::thread t; // Engine thread
 	std::atomic<bool> running;

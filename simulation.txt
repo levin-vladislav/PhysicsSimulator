@@ -1,0 +1,5 @@
+toggle
+create 0 0 1 rectangle 1
+create 3 4 1 circle 1
+setCameraPos 1.2 2
+setZoom 0.2

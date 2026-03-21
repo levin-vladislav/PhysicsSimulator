@@ -16,13 +16,14 @@ public:
 	void start();
 	void stop();
 	bool is_running() const;
+
+	Engine* engine_ptr;
+	Interpreter interpreter;
 private:
 	std::thread t;
 	std::atomic<bool> running;
-	Interpreter interpreter;
 	Logger logger;
 
-	Engine* engine_ptr;
 	std::atomic<bool>* shutdown_ptr;
 
 	void main_loop();
