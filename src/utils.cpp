@@ -1,6 +1,6 @@
 #include "utils.h"
 
-std::string get_date()
+const std::string get_date()
 {
     std::time_t now = std::time(nullptr);
     std::tm tm{};
@@ -10,7 +10,7 @@ std::string get_date()
     return date.str();
 }
 
-std::string get_time()
+const std::string get_time()
 {
     // Don't forget to add check of OS!
     std::time_t now = std::time(nullptr);
@@ -22,7 +22,7 @@ std::string get_time()
     return oss.str();
 }
 
-std::string readFile(std::string path)
+const std::string readFile(std::string path)
 {
     std::string content;
     std::ifstream fileStream(path, std::ios::in);

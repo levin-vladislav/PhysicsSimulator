@@ -79,213 +79,6 @@ void RenderObject::update()
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-InputWidget::InputWidget() : logger(Logger("Input widget"))
-{
-
-    inputBuffer[0] = '\0';
-}
-
-void InputWidget::draw()
-{
-    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-    ImGui::SetNextWindowPos(ImVec2(0, displaySize.y - 120));
-    ImGui::SetNextWindowSize(ImVec2(displaySize.x, 120));
-    ImGui::Begin("Input");
-    
-    ImGui::InputText("Input", inputBuffer, 256);
-    if (ImGui::Button("execute"))
-    {
-        logger.info(std::string(inputBuffer));
-        inputBuffer[0] = '\0';
-    }
-
-    ImGui::End();
-}
-
-WorldInspectorWidget::WorldInspectorWidget(Dispatcher* ptr)
-{
-    this->ptr = ptr;
-}
-
-void WorldInspectorWidget::draw()
-{
-    ImGui::Begin("WorldInspector");
-    if (ImGui::Button("toggle"))
-    {
-        ptr->engine_ptr->physicsEngine.toggle();
-    }
-    ImGui::End();
-}
-
-BodyInspectorWidget::BodyInspectorWidget(Dispatcher* ptr)
-{
-    this->ptr = ptr;
-}
-
-void BodyInspectorWidget::draw()
-{
-    const char* items[] = { "rectangle", "circle" };
-    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-    if (show)
-    {
-        ImGui::SetNextWindowSize(ImVec2(displaySize.x, 280));
-    }
-    else
-    {
-        ImGui::SetNextWindowSize(ImVec2(displaySize.x, 240));
-    }
-    ImGui::Begin("BodyInspector");
-
-    if (ImGui::Button("+"))
-    {
-        show = true;
-    }
-
-    if (show)
-    {
-        ImGui::Text("pos:");
-        ImGui::SameLine();
-        bool x = ImGui::InputFloat("x##0", &ctx.x, 0.0f, 0.0f, "%.2f", 0);
-        ImGui::SameLine();
-        bool y = ImGui::InputFloat("y##0", &ctx.y, 0.0f, 0.0f, "%.2f", 0);
-        bool m = ImGui::InputFloat("mass", &ctx.m, 0.0f, 0.0f, "%.2f", 0);
-        ImGui::Combo("Shape", &ctx.shape, items, 2);
-        float r = 1.0f;
-        if (ImGui::Button("Add"))
-        {
-            ptr->engine_ptr->request(CreateBodyRequest{
-                            glm::vec2(ctx.x, ctx.y),
-                            glm::vec2(0.0f, 0.0f),
-                            ctx.m,
-                            ctx.shape,
-                            r / 2 },
-                            CreateRenderObjectRequest{
-                                glm::vec2(ctx.x, ctx.y),
-                                std::vector<float> {-r / 2, -r / 2,
-                                                    r / 2, -r / 2,
-                                                     r / 2, r / 2,
-                                                     -r / 2, r / 2},
-                                ctx.shape,
-                                r / 2
-                }
-
-            );
-            ctx = {};
-            show = false;
-        }
-    }
-
-
-    if (ptr->engine_ptr->physicsEngine.get_bodies().size() > 0)
-    {
-        float x = round(ptr->engine_ptr->physicsEngine.getPos(id).x * 1000.0f) / 1000.0f;
-        float y = round(ptr->engine_ptr->physicsEngine.getPos(id).y * 1000.0f) / 1000.0f;
-        float vx = round(ptr->engine_ptr->physicsEngine.getVelocity(id).x * 1000.0f) / 1000.0f;
-        float vy = round(ptr->engine_ptr->physicsEngine.getVelocity(id).y * 1000.0f) / 1000.0f;
-        ImGui::Text(std::format("Body {}", id).data());
-        if (ImGui::InputFloat("x##1", &x, 0.1f, 0.2f, "%.2f", 0))
-        {
-            ptr->engine_ptr->physicsEngine.setPos(id, glm::vec2(x, y));
-        }
-        if (ImGui::InputFloat("y##1", &y, 0.1f, 0.2f, "%.2f", 0))
-        {
-            ptr->engine_ptr->physicsEngine.setPos(id, glm::vec2(x, y));
-        }
-        if (ImGui::InputFloat("vx##1", &vx, 0.1f, 0.2f, "%.2f", 0))
-        {
-            ptr->engine_ptr->physicsEngine.setVelocity(id, glm::vec2(vx, vy));
-        }
-        if (ImGui::InputFloat("vy##1", &vy, 0.1, 0.2f, "%.2f", 0))
-        {
-            ptr->engine_ptr->physicsEngine.setVelocity(id, glm::vec2(vx, vy));
-        }
-
-        if (ImGui::Button("Next"))
-        {
-            id++;
-            if (id > ptr->engine_ptr->physicsEngine.get_bodies().size())
-            {
-                id = 1;
-            }
-        }
-    }
-    else
-    {
-        ImGui::Text("Add bodies to get information");
-    }
-
-    ImGui::End();
-}
-
-BodyListWidget::BodyListWidget(Dispatcher* ptr, BodyInspectorWidget* inspector_ptr)
-{
-    this->ptr = ptr;
-    this->inspector_ptr = inspector_ptr;
-}
-
-void BodyListWidget::draw()
-{
-    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-    if (ImGui::GetItemRectSize().y < 120)
-    {
-        ImGui::SetNextWindowSize(ImVec2(displaySize.x, 120));
-    }
-    else
-    {
-        ImGui::SetNextWindowSize(ImVec2(displaySize.x, ImGui::GetItemRectSize().y));
-    }
-    ImGui::Begin("BodyList");
-
-
-    if (ptr->engine_ptr->physicsEngine.get_bodies().size() > 0)
-    {
-        show = true;
-    }
-
-
-    if (show)
-    {
-        for (auto it : ptr->engine_ptr->physicsEngine.get_ids())
-        {
-            ImGui::Text(std::format("Body {}", it.first).data());
-            if (!(inspector_ptr->id == it.first))
-            {
-                ImGui::SameLine();
-                if (ImGui::Button(std::format("select##{}", it.first).data()))
-                {
-                    inspector_ptr->id = it.first;
-                }
-            }
-            
-        }
-    }
-
-    else
-    {
-        ImGui::Text("Add bodies to get information");
-    }
-
-    ImGui::End();
-}
-
-
-void GuiManager::init(Dispatcher* ptr)
-{
-    widgets.push_back(new InputWidget());
-    widgets.push_back(new BodyInspectorWidget(ptr));
-    widgets.push_back(new BodyListWidget(ptr, (BodyInspectorWidget*)widgets.back()));
-    widgets.push_back(new WorldInspectorWidget(ptr));
-
-}
-
-void GuiManager::draw()
-{
-    for (auto& widget : widgets)
-    {
-        widget->draw();
-    }
-}
-
 void GraphicsEngine::update(float dt)
 {
     glfwMakeContextCurrent(window);
@@ -312,6 +105,7 @@ void GraphicsEngine::update(float dt)
     glUseProgram(gridShaderProgram);
     glUniformMatrix4fv(gridViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniform1f(gridThicknessLoc, gridThickness);
+
     glUniform1f(gridSizeLoc, gridSize);
     glm::mat4 gridModel = glm::mat4(1.0f);
     gridModel = glm::translate(gridModel, glm::vec3(round(camera_pos.x), round(camera_pos.y), 0.0f));
@@ -509,14 +303,11 @@ void GraphicsEngine::updateCamera()
 {
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
-    float x = (2.0f * mouseX) / window_width - 1.0f;
-    float y = 1.0f - (2.0f * mouseY) / window_height;
+    float x = (2.0f * (float)mouseX) / (float)window_width - 1.0f;
+    float y = 1.0f - (2.0f * (float)mouseY) / (float)window_height;
     glm::vec2 currPos(x, y);
     glm::vec4 currPos4(glm::inverse(view) * glm::vec4(x, y, 0.0f, 1.0f));
     currPos = glm::vec2(currPos4.x, currPos4.y);
-
-
-    //logger.info(std::format("pos: {} {}", currPos.x, currPos.y));
 
     glm::vec2 delta = currPos - prevMousePos;
 
@@ -532,18 +323,12 @@ void GraphicsEngine::updateCamera()
             moveCamera(-delta);
             prevMousePos = currPos - delta;
         }
-        
-        
     }
     else
     {
         isClicked = false;
         prevMousePos = currPos;
     }
-    
-
-    
-
 }
 
 void GraphicsEngine::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
@@ -569,6 +354,212 @@ int GraphicsEngine::add_object(RenderObject object)
     logger.info(std::format("Object {} is rendered.", id));
     can_update.store(true);
     return id;
+}
+
+InputWidget::InputWidget() : logger(Logger("Input widget"))
+{
+
+    inputBuffer[0] = '\0';
+}
+
+void InputWidget::draw()
+{
+    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    ImGui::SetNextWindowPos(ImVec2(0, displaySize.y - 120));
+    ImGui::SetNextWindowSize(ImVec2(displaySize.x, 120));
+    ImGui::Begin("Input");
+
+    ImGui::InputText("Input", inputBuffer, 256);
+    if (ImGui::Button("execute"))
+    {
+        logger.info(std::string(inputBuffer));
+        inputBuffer[0] = '\0';
+    }
+
+    ImGui::End();
+}
+
+WorldInspectorWidget::WorldInspectorWidget(Dispatcher* ptr)
+{
+    this->ptr = ptr;
+}
+
+void WorldInspectorWidget::draw()
+{
+    ImGui::Begin("WorldInspector");
+    if (ImGui::Button("toggle"))
+    {
+        ptr->engine_ptr->physicsEngine.toggle();
+    }
+    ImGui::End();
+}
+
+BodyInspectorWidget::BodyInspectorWidget(Dispatcher* ptr)
+{
+    this->ptr = ptr;
+}
+
+void BodyInspectorWidget::draw()
+{
+    const char* items[] = { "rectangle", "circle" };
+    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    if (show)
+    {
+        ImGui::SetNextWindowSize(ImVec2(displaySize.x, 280));
+    }
+    else
+    {
+        ImGui::SetNextWindowSize(ImVec2(displaySize.x, 240));
+    }
+    ImGui::Begin("BodyInspector");
+
+    if (ImGui::Button("+"))
+    {
+        show = true;
+    }
+
+    if (show)
+    {
+        ImGui::Text("pos:");
+        ImGui::SameLine();
+        bool x = ImGui::InputFloat("x##0", &ctx.x, 0.0f, 0.0f, "%.2f", 0);
+        ImGui::SameLine();
+        bool y = ImGui::InputFloat("y##0", &ctx.y, 0.0f, 0.0f, "%.2f", 0);
+        bool m = ImGui::InputFloat("mass", &ctx.m, 0.0f, 0.0f, "%.2f", 0);
+        ImGui::Combo("Shape", &ctx.shape, items, 2);
+        float r = 1.0f;
+        if (ImGui::Button("Add"))
+        {
+            ptr->engine_ptr->request(CreateBodyRequest{
+                            glm::vec2(ctx.x, ctx.y),
+                            glm::vec2(0.0f, 0.0f),
+                            ctx.m,
+                            ctx.shape,
+                            r / 2 },
+                            CreateRenderObjectRequest{
+                                glm::vec2(ctx.x, ctx.y),
+                                std::vector<float> {-r / 2, -r / 2,
+                                                    r / 2, -r / 2,
+                                                     r / 2, r / 2,
+                                                     -r / 2, r / 2},
+                                ctx.shape,
+                                r / 2
+                }
+
+            );
+            ctx = {};
+            show = false;
+        }
+    }
+
+
+    if (ptr->engine_ptr->physicsEngine.get_bodies().size() > 0)
+    {
+        float x = round(ptr->engine_ptr->physicsEngine.getPos(id).x * 1000.0f) / 1000.0f;
+        float y = round(ptr->engine_ptr->physicsEngine.getPos(id).y * 1000.0f) / 1000.0f;
+        float vx = round(ptr->engine_ptr->physicsEngine.getVelocity(id).x * 1000.0f) / 1000.0f;
+        float vy = round(ptr->engine_ptr->physicsEngine.getVelocity(id).y * 1000.0f) / 1000.0f;
+        ImGui::Text(std::format("Body {}", id).data());
+        if (ImGui::InputFloat("x##1", &x, 0.1f, 0.2f, "%.2f", 0))
+        {
+            ptr->engine_ptr->physicsEngine.setPos(id, glm::vec2(x, y));
+        }
+        if (ImGui::InputFloat("y##1", &y, 0.1f, 0.2f, "%.2f", 0))
+        {
+            ptr->engine_ptr->physicsEngine.setPos(id, glm::vec2(x, y));
+        }
+        if (ImGui::InputFloat("vx##1", &vx, 0.1f, 0.2f, "%.2f", 0))
+        {
+            ptr->engine_ptr->physicsEngine.setVelocity(id, glm::vec2(vx, vy));
+        }
+        if (ImGui::InputFloat("vy##1", &vy, 0.1f, 0.2f, "%.2f", 0))
+        {
+            ptr->engine_ptr->physicsEngine.setVelocity(id, glm::vec2(vx, vy));
+        }
+
+        if (ImGui::Button("Next"))
+        {
+            id++;
+            if (id > ptr->engine_ptr->physicsEngine.get_bodies().size())
+            {
+                id = 1;
+            }
+        }
+    }
+    else
+    {
+        ImGui::Text("Add bodies to get information");
+    }
+
+    ImGui::End();
+}
+
+BodyListWidget::BodyListWidget(Dispatcher* ptr, BodyInspectorWidget* inspector_ptr)
+{
+    this->ptr = ptr;
+    this->inspector_ptr = inspector_ptr;
+}
+
+void BodyListWidget::draw()
+{
+    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    if (ImGui::GetItemRectSize().y < 120)
+    {
+        ImGui::SetNextWindowSize(ImVec2(displaySize.x, 120));
+    }
+    else
+    {
+        ImGui::SetNextWindowSize(ImVec2(displaySize.x, ImGui::GetItemRectSize().y));
+    }
+    ImGui::Begin("BodyList");
+
+
+    if (ptr->engine_ptr->physicsEngine.get_bodies().size() > 0)
+    {
+        show = true;
+    }
+
+
+    if (show)
+    {
+        for (auto it : ptr->engine_ptr->physicsEngine.get_ids())
+        {
+            ImGui::Text(std::format("Body {}", it.first).data());
+            if (!(inspector_ptr->id == it.first))
+            {
+                ImGui::SameLine();
+                if (ImGui::Button(std::format("select##{}", it.first).data()))
+                {
+                    inspector_ptr->id = it.first;
+                }
+            }
+
+        }
+    }
+
+    else
+    {
+        ImGui::Text("Add bodies to get information");
+    }
+
+    ImGui::End();
+}
+
+void GuiManager::init(Dispatcher* ptr)
+{
+    widgets.push_back(new InputWidget());
+    widgets.push_back(new BodyInspectorWidget(ptr));
+    widgets.push_back(new BodyListWidget(ptr, (BodyInspectorWidget*)widgets.back()));
+    widgets.push_back(new WorldInspectorWidget(ptr));
+
+}
+
+void GuiManager::draw()
+{
+    for (auto& widget : widgets)
+    {
+        widget->draw();
+    }
 }
 
 GLuint compileShader(GLenum type, const char* source) {
@@ -615,4 +606,3 @@ GLuint createProgram(const char* vertexPath, const char* fragmentPath) {
     glDeleteShader(fragmentShader);
     return program;
 }
-

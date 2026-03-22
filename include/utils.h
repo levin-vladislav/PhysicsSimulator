@@ -16,8 +16,6 @@
 #include <queue>
 #include <box2d/box2d.h>
 
-
-
 // request for PhysicsEngine
 struct CreateBodyRequest
 {
@@ -40,9 +38,7 @@ struct CreateRenderObjectRequest
 	int id = 0;
 };
 
-std::string get_date();
-std::string get_time();
+const std::string get_date();
+const std::string get_time();
 
-std::string readFile(std::string path);
-
-
+const std::string readFile(std::string path);

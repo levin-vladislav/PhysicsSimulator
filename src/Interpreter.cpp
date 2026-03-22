@@ -158,9 +158,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -227,9 +229,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -263,9 +267,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -301,9 +307,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -339,9 +347,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -379,9 +389,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -415,9 +427,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -449,9 +463,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -483,9 +499,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -517,9 +535,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -553,9 +573,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -589,9 +611,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float or int was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -623,9 +647,11 @@ void Interpreter::init_commands()
             }
             catch (const std::invalid_argument& e) {
                 logger.error("Invalid float was given");
+                logger.error(e.what(), false);
             }
             catch (const std::out_of_range& e) {
                 logger.error("Float out of range was given");
+                logger.error(e.what(), false);
             }
 
         });
@@ -681,9 +707,7 @@ void Interpreter::init_commands()
                 }
 
                 logger.raw(commands[command].get_description());
-
             }
-
         });
     add_command(help);
 
@@ -738,5 +762,3 @@ std::string Command::get_description()
 {
     return description;
 }
-
-

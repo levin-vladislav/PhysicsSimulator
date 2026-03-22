@@ -75,9 +75,9 @@ public:
 
 	void setGroundFriction(float friction);
 
-	inline void setG(float g) { this->g = g; }
+	inline void setG(float const g) { this->g = g; }
 
-	void setFriction(int id, float friction);
+	void setFriction(int const id, float const friction);
 
 	std::string get_info(int id);
 
@@ -108,7 +108,7 @@ private:
 
 	int log_i = 0;
 
-	int subStepCount = 4;
+	const int subStepCount = 4;
 
 };
 

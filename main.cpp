@@ -1,7 +1,7 @@
-﻿#include "Engine.h"
-#include "Dispatcher.h"
-#include "Logger.h"
+﻿#include "Logger.h"
 #include <windows.h>
+#include "Engine.h"
+#include "Dispatcher.h"
 
 #include <atomic>
 

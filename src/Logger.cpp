@@ -77,10 +77,6 @@ void Logger::log(std::string text, MessageType type, std::string name, bool show
     std::lock_guard<std::mutex> lock(log_mutex);
     std::string message;
     
-    
-    //message += std::format("[{0}] [{1}/{2}]: {3}", get_time(), name, "", text);
-
-    
     Message msg = Message(text, type, name, show);
     
     log_queue.push(msg);
@@ -145,7 +141,6 @@ void Logger::start_logging()
                 }
             }
         }
-
     );
 }
 

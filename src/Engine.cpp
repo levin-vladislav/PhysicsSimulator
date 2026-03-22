@@ -21,8 +21,6 @@ void Engine::update(float dt)
 	}
 	physicsEngine.update(dt);
 	graphicsEngine.update(dt);
-	//if (graphicsEngine.click.load()){}\
-
 }
 
 void Engine::start()
@@ -101,7 +99,6 @@ void Engine::main_loop()
 			logger.error(e);
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(int(1000*dt)));
-			
 		// Runs update function with dt equal to time difference between ticks
 	}
 
@@ -120,8 +117,3 @@ void Engine::request(CreateBodyRequest physics_request,
 
 	next_id++;
 }
-
-
-
-
-

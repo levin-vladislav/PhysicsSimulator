@@ -4,7 +4,6 @@
 #include <atomic>
 #include <thread>
 
-
 class Engine;
 
 class Dispatcher
