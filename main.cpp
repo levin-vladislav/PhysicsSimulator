@@ -7,6 +7,7 @@
 
 void EnableANSI()
 {
+    // Enabling using escape sequences in console, so logs can be colored
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE) return;
 
@@ -34,19 +35,8 @@ int main()
     Dispatcher dispatcher = Dispatcher(&engine, &shutdown);  
 
     // Main loop
-    try
-    {
-        while (!shutdown.load()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-    }
-    catch (const char* e)
-    {
-        logger.info("Unexpected error occured: ");
-        logger.error(e);
-        engine.stop();
-        dispatcher.stop();
-        return -1;
+    while (!shutdown.load()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     engine.stop();
